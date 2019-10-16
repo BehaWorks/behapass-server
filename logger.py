@@ -6,7 +6,7 @@ bp = Blueprint('api', __name__, template_folder='templates')
 
 @bp.route("/")
 def index_page():
-    return "Hello World"
+    return "Hello World!"
 
 
 @bp.route("/data/")
