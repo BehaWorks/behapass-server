@@ -5,4 +5,4 @@ pipelines:
           name: Deploy to server
           deployment: production
           script:
-            - rsync -a  -e "ssh -o StrictHostKeyChecking=no" ./ bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/pythoh/logger
+            - rsync -a  -e "ssh -o StrictHostKeyChecking=no" ./ bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/python/logger
