@@ -1,0 +1,8 @@
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Deploy to server
+          deployment: production
+          script:
+            - rsync -a  -e "ssh -o StrictHostKeyChecking=no" ./ bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/pythoh/logger
