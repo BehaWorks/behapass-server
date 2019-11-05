@@ -5,11 +5,11 @@ Ako úložisko slúži [MongoDb](https://www.mongodb.com/).
 
 Vyžaduje sa Python 3 alebo novší. Na nainštalovanie všetkých závislostí z requirements.txt odporúčame použiť nástroj `pip`.
 
-Spustenie: 
-1. Skontrolovať závislosti, najmä Python 3 a pip, prípadne si vytvoriť a aktivovať Python virtual enviroment.
-2. Pullnúť tento repozitár.
-3. Inštaláciu vykonať prikazom: `pip install -e .` z koreňového priečinku tohto repozitára.
-4. Nastaviť konfiguráciu v súbore `config/config.py` podľa predlohy `config/default.py` najmä pripojenie k MongoDB.
+## Spustenie:  
+1. Skontrolovať závislosti, najmä Python 3 a pip, prípadne si vytvoriť a aktivovať Python virtual enviroment.  
+2. Pullnúť tento repozitár.  
+3. Inštaláciu vykonať prikazom: `pip install -e .` z koreňového priečinku tohto repozitára.  
+4. Nastaviť konfiguráciu v súbore `config/config.py` podľa predlohy `config/default.py` najmä pripojenie k MongoDB.  
 
 Primárnym spúšťačom je súbor `logger.py`, no do produkcie odporúčame použiť niektorý z produkčných Python serverov, napríklad [Gunicorn](https://gunicorn.org/). 
 
