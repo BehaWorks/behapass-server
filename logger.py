@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.config.from_pyfile('config/config.py')
 bp = Blueprint('api', __name__, template_folder='templates', url_prefix=app.config['URL_PREFIX'])
 bp.json_encoder = JSONEncoder
-logger = Api(app=bp, title="Logger", description="Logger API description",
+logger = Api(app=bp, title="Logger", description="Logger API description", version="1.1",
              contact_url="https://team12-19.studenti.fiit.stuba.sk",
              doc="/documentation")
 
