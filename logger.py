@@ -17,6 +17,7 @@ namespace = logger.namespace('logger', description='Logger APIs')
 app.register_blueprint(bp)
 
 movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
+                                                   'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
                                                    'controller_id': fields.String(required=True),
                                                    'x': fields.Float(required=True),
@@ -30,6 +31,7 @@ movement_record = logger.model('Movement Record', {'session_id': fields.String(r
                                                    'r_z': fields.Float(required=True),
                                                    })
 button_record = logger.model('Button Record', {'session_id': fields.String(required=True),
+                                               'user_id': fields.String(),
                                                'timestamp': fields.Float(required=True),
                                                'controller_id': fields.String(required=True),
                                                'trigger': fields.Float(),
