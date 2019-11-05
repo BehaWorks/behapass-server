@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.config.from_pyfile('config/config.py')
 bp = Blueprint('api', __name__, template_folder='templates', url_prefix=app.config['URL_PREFIX'])
 bp.json_encoder = JSONEncoder
-logger = Api(app=bp, title="Logger", description="Logger API description",
+logger = Api(app=bp, title="Logger", description="Logger API description", version="1.1",
              contact_url="https://team12-19.studenti.fiit.stuba.sk",
              doc="/documentation")
 
@@ -17,6 +17,7 @@ namespace = logger.namespace('logger', description='Logger APIs')
 app.register_blueprint(bp)
 
 movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
+                                                   'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
                                                    'controller_id': fields.String(required=True),
                                                    'x': fields.Float(required=True),
@@ -30,6 +31,7 @@ movement_record = logger.model('Movement Record', {'session_id': fields.String(r
                                                    'r_z': fields.Float(required=True),
                                                    })
 button_record = logger.model('Button Record', {'session_id': fields.String(required=True),
+                                               'user_id': fields.String(),
                                                'timestamp': fields.Float(required=True),
                                                'controller_id': fields.String(required=True),
                                                'trigger': fields.Float(),
