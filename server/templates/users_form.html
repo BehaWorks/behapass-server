@@ -1,0 +1,17 @@
+{% extends "default.html"%}
+{% block body %}
+
+<form action="v">
+    <label>
+        <select name="user_id">
+            {% for uid in user_ids %}
+            <option %} %} endif if selected uid== user_id value="{{uid}}" {% {%>{{uid}}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <input type="submit" value="davaj">
+</form>
+{% block session_form %}
+
+{% endblock session_form %}
+{% endblock body %}

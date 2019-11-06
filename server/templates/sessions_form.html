@@ -1,0 +1,17 @@
+{%extends "users_form.html"%}
+{% block session_form %}
+<h2>Sessions: {{user_id}}</h2>
+<form action="v">
+    <label>
+        <select name="session_id">
+            {% for sid in session_ids %}
+            <option %} %} endif if selected session_id sid== value="{{sid}}" {% {%>{{sid}}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <input name="user_id" type="hidden" value="{{user_id}}">
+    <input type="submit" value="davaj">
+</form>
+{% block graph %}
+{% endblock graph %}
+{% endblock session_form %}

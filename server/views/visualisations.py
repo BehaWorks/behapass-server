@@ -35,32 +35,24 @@ def create_plot(query):
         z=df['z'],
         mode="lines",
         line=dict(width=2, color="blue"),
-        opacity=0.1
+        opacity=1
     ), go.Scatter3d(
         x=df['x'],
         y=df['y'],
         z=df['z'],
         mode="lines",
         line=dict(width=2, color="blue"),
-        opacity=0.1
+        opacity=1
     )]
     frames = [go.Frame(
         data=go.Scatter3d(
             x=df['x'][:k],
             y=df['y'][:k],
             z=df['z'][:k],
-            mode='markers',
-            marker=dict(
-                color='rgb(255, 0, 0)',
-                size=1,
-                symbol='circle',
-                line=dict(
-                    color='rgb(255, 0, 0)',
-                    width=1
-                )
-            ),
+            mode="lines",
+            line=dict(width=8, color="red"),
 
-            opacity=0.1
+            opacity=1
         )
     ) for k in range(len(df['timestamp']))]
 
@@ -70,7 +62,7 @@ def create_plot(query):
         scene=dict(
             camera=dict(up=dict(x=0, y=1, z=0)),
             xaxis=dict(title='X', range=[-2, 2]),
-            yaxis=dict(title='Vyska', range=[-2, 2]),
+            yaxis=dict(title='Height', range=[-2, 2]),
             zaxis=dict(title='Z', range=[-2, 2])),
         updatemenus=[dict(type="buttons",
                           buttons=[dict(label="Play",
@@ -81,12 +73,16 @@ def create_plot(query):
     fig_anim = go.Figure(data=splot_anim, layout=layout_anim, frames=frames)
     frame_duration = df['timestamp'].tolist()[-1] / len(df['timestamp'])
     output = po.plot(fig_anim, output_type='div', animation_opts=dict(frame=dict(duration=frame_duration)))
-    # graphJSON = json.dumps(output, cls=plotly.utils.PlotlyJSONEncoder)
     return output
 
 
 @blueprint.route('/')
 def root():
+    return render_template('users_form.html', user_ids=get_user_ids())
+
+
+@blueprint.route('/v')
+def user_sessions():
     user_id = None
     session_id = None
 
@@ -99,16 +95,21 @@ def root():
     except KeyError:
         pass
 
-    if user_id is not None:
-        return render_template('user_sessions.html',
-                               user_id=user_id,
-                               session_ids=get_session_ids(user_id)
-                               )
     if session_id is not None:
-        return render_template('graph.html', graph_div=create_plot({"session_id": session_id}))
+        return render_template('graph.html',
+                               graph_div=create_plot({"session_id": session_id}),
+                               session_id=session_id,
+                               user_id=user_id,
+                               session_ids=get_session_ids(user_id),
+                               user_ids=get_user_ids(),
+                               title="%s - %s" % (user_id, session_id)
+                               )
 
-    return render_template('index.html', user_ids=get_user_ids())
+    if user_id is not None:
+        return render_template('sessions_form.html',
+                               user_id=user_id,
+                               session_ids=get_session_ids(user_id),
+                               user_ids=get_user_ids(),
+                               title=user_id + ' sessions'
+                               )
 
-# @blueprint.route('/<user_id>')
-# def user_sessions(user_id):
-#     pass
