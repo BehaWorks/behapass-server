@@ -1,0 +1,14 @@
+{%extends "default.html"%}
+{% block body %}
+<h2>Sessions: {{user_id}}</h2>
+<form>
+    <label>
+        <select name="session_id">
+            {% for session_id in session_ids %}
+            <option value="{{session_id}}">{{session_id}}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <input type="submit" value="davaj">
+</form>
+{% endblock %}

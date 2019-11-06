@@ -1,0 +1,15 @@
+{% extends "default.html"%}
+{% block body %}
+
+<form>
+    <label>
+        <select name="user_id">
+            {% for user_id in user_ids %}
+            <option value="{{user_id}}">{{user_id}}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <input type="submit" value="davaj">
+</form>
+
+{% endblock %}
