@@ -5,7 +5,7 @@
     <label>
         <select name="session_id">
             {% for sid in session_ids %}
-            <option %} %} endif if selected session_id sid== value="{{sid}}" {% {%>{{sid}}</option>
+            <option {% if session_id==sid %} selected {% endif %} value="{{sid}}">{{sid}}</option>
             {% endfor %}
         </select>
     </label>

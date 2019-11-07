@@ -4,12 +4,10 @@ import plotly.offline as po
 import pymongo
 from flask import Blueprint, render_template, request
 
+from server import config
+
 blueprint = Blueprint('visualisations', __name__)
 
-config = {'DB_HOST': "mongodb://localhost:27017/",
-          'DB_NAME': "behaworks_logger_v5",
-          'DB_PORT': "",
-          'URL_PREFIX': "/api"}
 
 mongo = pymongo.MongoClient(config["DB_HOST"], )
 db = mongo[config["DB_NAME"]]

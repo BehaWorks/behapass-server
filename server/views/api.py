@@ -2,13 +2,10 @@ import pymongo
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
+from server import app
 from utils.json import JSONEncoder
 
-# from logger import config
-config = {'DB_HOST': "mongodb://localhost:27017/",
-          'DB_NAME': "behaworks_logger",
-          'DB_PORT': "",
-          'URL_PREFIX': "/api"}
+config = app.config
 
 blueprint = Blueprint('api', __name__)
 blueprint.json_encoder = JSONEncoder
