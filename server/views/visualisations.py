@@ -6,6 +6,9 @@ from flask import Blueprint, render_template, request
 
 from server import config
 
+Z_GRAPH_RANGE = [-2, 2]
+X_GRAPH_RANGE = [-2, 2]
+
 blueprint = Blueprint('visualisations', __name__)
 
 
@@ -27,31 +30,12 @@ def get_session_ids(user_id=None):
 
 def create_plot(query):
     df = pd.DataFrame(list(movement_collection.find(query)))
-    splot_anim = [go.Scatter3d(
-        x=df['x'],
-        y=df['y'],
-        z=df['z'],
-        mode="lines",
-        line=dict(width=2, color="blue"),
-        opacity=1
-    ), go.Scatter3d(
-        x=df['x'],
-        y=df['y'],
-        z=df['z'],
-        mode="lines",
-        line=dict(width=2, color="blue"),
-        opacity=1
-    )]
+    max_height = max(df['y'])
+    splot_anim = [create_scatter3d(df), create_scatter3d(df)]
     frames = [go.Frame(
-        data=go.Scatter3d(
-            x=df['x'][:k],
-            y=df['y'][:k],
-            z=df['z'][:k],
-            mode="lines",
-            line=dict(width=8, color="red"),
-
-            opacity=1
-        )
+        data=go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
+                          mode="lines", line=dict(width=8, color="red"), opacity=1
+                          )
     ) for k in range(len(df['timestamp']))]
 
     layout_anim = go.Layout(
@@ -59,19 +43,21 @@ def create_plot(query):
         height=1024,
         scene=dict(
             camera=dict(up=dict(x=0, y=1, z=0)),
-            xaxis=dict(title='X', range=[-2, 2]),
-            yaxis=dict(title='Height', range=[-2, 2]),
-            zaxis=dict(title='Z', range=[-2, 2])),
-        updatemenus=[dict(type="buttons",
-                          buttons=[dict(label="Play",
-                                        method="animate",
-                                        args=[None])])]
+            xaxis=dict(title='X', range=X_GRAPH_RANGE),
+            yaxis=dict(title='Height', range=[0, max_height + 0.25]),
+            zaxis=dict(title='Z', range=Z_GRAPH_RANGE)),
+        updatemenus=[dict(type="buttons", buttons=[dict(label="Play", method="animate", args=[None])])]
     )
 
     fig_anim = go.Figure(data=splot_anim, layout=layout_anim, frames=frames)
     frame_duration = df['timestamp'].tolist()[-1] / len(df['timestamp'])
     output = po.plot(fig_anim, output_type='div', animation_opts=dict(frame=dict(duration=frame_duration)))
     return output
+
+
+def create_scatter3d(df):
+    return go.Scatter3d(x=df['x'], y=df['y'], z=df['z'],
+                        mode="lines", line=dict(width=2, color="blue"), opacity=1)
 
 
 @blueprint.route('/')
