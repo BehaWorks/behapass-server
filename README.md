@@ -17,6 +17,6 @@ Dokumentácia je k dispozícií na adrese `<URL_PREFIX>/documentation`
 Štruktúra údajov v API je inšpirovaná údajmi z [OpenVR](https://github.com/ValveSoftware/openvr/wiki/IVRCompositor::WaitGetPoses).
 
 ## Vizualizácie
-Na adrese `<URL_PREFIX>/visualisations` je možné zobraziť vizualizácie nalogovaných dát. Vizualizácie sú rozdelené podľa mena používateľa. Každý používateľ má niekoľko sessions. Jedna session reprezenuje jeden pohyb.
+Na adrese `/visualisations` je možné zobraziť vizualizácie nalogovaných dát. Vizualizácie sú rozdelené podľa mena používateľa. Každý používateľ má niekoľko sessions. Jedna session reprezenuje jeden pohyb.
 
 Na opätovné spustenie animácie grafu treba obnoviť stránku.
