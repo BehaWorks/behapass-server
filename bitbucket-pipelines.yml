@@ -2,6 +2,10 @@ pipelines:
   branches:
     master:
       - step:
+          name: Run tests
+          script:
+            - python -m unittest discover tests/
+      - step:
           name: Deploy to server
           deployment: production
           script:
