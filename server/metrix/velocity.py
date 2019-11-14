@@ -1,13 +1,13 @@
 import numpy as np
 
-from . import Metric
+from . import Metric, Result
 
 
 class Velocity(Metric):
-    def calculate(self, data: list) -> float:
+    def calculate(self, data: list) -> Result:
         coordinates, timestamps = self.extract_coordinates_timestamps(data)
         speeds = self.derivate_wrt_time(coordinates, timestamps)
-        velocity = np.average(speeds)
+        velocity = Result(speeds)
         return velocity
 
     def extract_coordinates_timestamps(self, movements):
