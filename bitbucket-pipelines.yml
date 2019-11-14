@@ -2,6 +2,8 @@ image: python:latest
 pipelines:
   default:
     - step:
+        caches:
+          - pip
         name: Run tests
         script:
           - pip install -r requirements.txt
@@ -9,6 +11,8 @@ pipelines:
   branches:
     master:
       - step:
+          caches:
+            - pip
           name: Run tests
           script:
             - pip install -r requirements.txt
