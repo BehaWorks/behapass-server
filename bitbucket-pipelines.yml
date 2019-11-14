@@ -1,7 +1,7 @@
-image: python:latest
 pipelines:
   default:
     - step:
+        image: python:latest
         caches:
           - pip
         name: Run tests
@@ -11,6 +11,7 @@ pipelines:
   branches:
     master:
       - step:
+          image: python:latest
           caches:
             - pip
           name: Run tests
