@@ -1,4 +1,9 @@
 pipelines:
+  default:
+    - step:
+      name: Run tests
+      script:
+        - python -m unittest discover tests/
   branches:
     master:
       - step:
