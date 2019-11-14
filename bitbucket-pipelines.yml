@@ -1,3 +1,4 @@
+image: python:latest
 pipelines:
   default:
     - step:
