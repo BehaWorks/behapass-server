@@ -1,8 +1,8 @@
 {% extends "sessions_form.html" %}
 {% block graph %}
 
-{{graph3d_div | safe}}
-{{velocity_div | safe}}
-{{acceleration_div | safe}}
+{% for graph in graphs %}
+{{graph | safe}}
+{% endfor %}
 
 {% endblock graph %}

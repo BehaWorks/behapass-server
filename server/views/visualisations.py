@@ -5,12 +5,15 @@ import pymongo
 from flask import Blueprint, render_template, request
 
 from server import config
+from server.metrix import Result, Metric
+from server.metrix.acceleration import Acceleration
+from server.metrix.velocity import Velocity
+from server.models.movement import Movement
 
 Z_GRAPH_RANGE = [-2, 2]
 X_GRAPH_RANGE = [-2, 2]
 
 blueprint = Blueprint('visualisations', __name__)
-
 
 mongo = pymongo.MongoClient(config["DB_HOST"], )
 db = mongo[config["DB_NAME"]]
@@ -28,8 +31,7 @@ def get_session_ids(user_id=None):
         return movement_collection.distinct("session_id")
 
 
-def create_plot(query):
-    df = pd.DataFrame(list(movement_collection.find(query)))
+def create_plot3d(df):
     max_height = max(df['y'])
     splot_anim = [create_scatter3d(df), create_scatter3d(df)]
     frames = [go.Frame(
@@ -52,6 +54,27 @@ def create_plot(query):
     fig_anim = go.Figure(data=splot_anim, layout=layout_anim, frames=frames)
     frame_duration = df['timestamp'].tolist()[-1] / len(df['timestamp'])
     output = po.plot(fig_anim, output_type='div', animation_opts=dict(frame=dict(duration=frame_duration)))
+    return output
+
+
+def create_metric_plot(metric: Result, title):
+    fig = go.Figure(
+        data=[go.Scatter(x=list(range(len(metric.data))), y=metric.data)],
+        layout=go.Layout(
+            title=go.layout.Title(text=title)
+        )
+    )
+    output = po.plot(fig, output_type='div')
+    return output
+
+
+def create_metric_boxplot(data, title):
+    fig = go.Figure(layout=go.Layout(
+        title=go.layout.Title(text=title)
+    ))
+    for i in data:
+        fig.add_trace(go.Box(y=data[i], x=[i] * len(data[i]), boxpoints='all'))
+    output = po.plot(fig, output_type='div')
     return output
 
 
@@ -80,8 +103,14 @@ def user_sessions():
         pass
 
     if session_id is not None:
+        df = pd.DataFrame(list(movement_collection.find({"session_id": session_id})))
+        data = []
+        for i in df.to_dict('records'):
+            data.append(Movement.from_dict(i))
         return render_template('graph.html',
-                               graph_div=create_plot({"session_id": session_id}),
+                               graph3d_div=create_plot3d(df),
+                               velocity_div=create_metric_plot(Velocity().calculate(data), "Velocity"),
+                               acceleration_div=create_metric_plot(Acceleration().calculate(data), "Acceleration"),
                                session_id=session_id,
                                user_id=user_id,
                                session_ids=get_session_ids(user_id),
@@ -97,3 +126,32 @@ def user_sessions():
                                title=user_id + ' sessions'
                                )
 
+
+@blueprint.route('/metrix')
+def metrix():
+    v_averages, v_medians = compute_metric(Velocity())
+    a_averages, a_medians = compute_metric(Acceleration())
+    return render_template('metrix.html', graphs=[create_metric_boxplot(v_averages, "Velocity averages"),
+                                                  create_metric_boxplot(v_medians, "Velocity medians"),
+                                                  create_metric_boxplot(a_averages, "Acceleration averages"),
+                                                  create_metric_boxplot(a_medians, "Acceleration medians")])
+
+
+def compute_metric(instance: Metric):
+    averages = {}
+    medians = {}
+    for user_id in get_user_ids():
+        averages[user_id] = []
+        medians[user_id] = []
+        for session_id in get_session_ids(user_id):
+            movements = []
+            for record in movement_collection.find({"session_id": session_id}):
+                try:
+                    movements.append(Movement.from_dict(record))
+                except KeyError:
+                    pass
+            if movements:
+                result = instance.calculate(movements)
+                averages[user_id].append(result.average)
+                medians[user_id].append(result.median)
+    return averages, medians
