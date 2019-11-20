@@ -1,8 +1,8 @@
-{% extends "sessions_form.html" %}
-{% block graph %}
+{% extends "default.html" %}
+{% block body %}
 
 {% for graph in graphs %}
 {{graph | safe}}
 {% endfor %}
 
-{% endblock graph %}
+{% endblock body %}

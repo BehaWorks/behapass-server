@@ -70,7 +70,8 @@ def create_metric_plot(metric: Result, title):
 
 def create_metric_boxplot(data, title):
     fig = go.Figure(layout=go.Layout(
-        title=go.layout.Title(text=title)
+        title=go.layout.Title(text=title),
+        showlegend=False
     ))
     for i in data:
         fig.add_trace(go.Box(y=data[i], x=[i] * len(data[i]), boxpoints='all'))
