@@ -6,6 +6,7 @@ class Metric:
     Base class for metrics. Subclass this class for individual metrics.
     """
 
+
     def calculate(self, data) -> 'Result':
         """
 
@@ -44,3 +45,13 @@ class Result:
     @property
     def interquartile_range(self):
         return self.upper_q - self.lower_q
+
+
+def get_all_subclasses_instances(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass())
+        all_subclasses.extend(get_all_subclasses_instances(subclass))
+
+    return all_subclasses

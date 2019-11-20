@@ -5,14 +5,14 @@ import pymongo
 from flask import Blueprint, render_template, request
 
 from server import config
-from server.metrix import Result, Metric
+from server.metrix import Result, Metric, get_all_subclasses_instances
 from server.metrix.acceleration import Acceleration
 from server.metrix.velocity import Velocity
 from server.models.movement import Movement
 
 Z_GRAPH_RANGE = [-2, 2]
 X_GRAPH_RANGE = [-2, 2]
-METRIX = [Acceleration(), Velocity()]
+METRIX = get_all_subclasses_instances(Metric)
 
 blueprint = Blueprint('visualisations', __name__)
 
