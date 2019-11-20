@@ -11,14 +11,17 @@ class Velocity(Metric):
         return velocity
 
     def extract_coordinates_timestamps(self, movements):
-        coordinates = [np.array([movement['x'], movement['y'], movement['z']]) for movement in movements]
-        timestamps = [np.array(movement['timestamp']) for movement in movements]
+        coordinates = [np.array([movement.x, movement.y, movement.z]) for movement in movements]
+        timestamps = [np.array(movement.timestamp) for movement in movements]
         return coordinates, timestamps
 
     def derivate_wrt_time(self, coordinates, timestamps):
         derivatives = []
-        coordinates1 = coordinates.pop(0)
-        timestamp1 = timestamps.pop(0)
+        try:
+            coordinates1 = coordinates.pop(0)
+            timestamp1 = timestamps.pop(0)
+        except IndexError:
+            return []
         for coordinates2, timestamp2 in zip(coordinates, timestamps):
             time_dif = timestamp2 - timestamp1
             derivatives.append(self.distance(coordinates2, coordinates1) / time_dif)
