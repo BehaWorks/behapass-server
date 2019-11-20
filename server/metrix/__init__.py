@@ -1,6 +1,8 @@
 import numpy as np
 
+from . import *
 
+__all__ = ["Metric", "velocity", "acceleration", "jerk"]
 class Metric:
     """
     Base class for metrics. Subclass this class for individual metrics.
@@ -51,7 +53,7 @@ def get_all_subclasses_instances(cls):
     all_subclasses = []
 
     for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass())
+        all_subclasses.append(subclass)
         all_subclasses.extend(get_all_subclasses_instances(subclass))
 
     return all_subclasses
