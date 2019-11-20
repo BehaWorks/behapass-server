@@ -12,6 +12,7 @@ from server.models.movement import Movement
 
 Z_GRAPH_RANGE = [-2, 2]
 X_GRAPH_RANGE = [-2, 2]
+METRIX = [Acceleration(), Velocity()]
 
 blueprint = Blueprint('visualisations', __name__)
 
@@ -130,20 +131,20 @@ def user_sessions():
 
 @blueprint.route('/metrix')
 def metrix():
-    v_averages, v_medians = compute_metric(Velocity())
-    a_averages, a_medians = compute_metric(Acceleration())
-    return render_template('metrix.html', graphs=[create_metric_boxplot(v_averages, "Velocity averages"),
-                                                  create_metric_boxplot(v_medians, "Velocity medians"),
-                                                  create_metric_boxplot(a_averages, "Acceleration averages"),
-                                                  create_metric_boxplot(a_medians, "Acceleration medians")])
+    graphs = []
+    for instance in METRIX:
+        values = compute_metric(instance)
+        for key in values:
+            graphs.append(create_metric_boxplot(values[key], type(instance).__name__ + " " + key))
+
+    return render_template('metrix.html', graphs=graphs)
 
 
 def compute_metric(instance: Metric):
-    averages = {}
-    medians = {}
+    results = {"averages": {}, "medians": {}}
     for user_id in get_user_ids():
-        averages[user_id] = []
-        medians[user_id] = []
+        results["averages"][user_id] = []
+        results["medians"][user_id] = []
         for session_id in get_session_ids(user_id):
             movements = []
             for record in movement_collection.find({"session_id": session_id}):
@@ -153,6 +154,6 @@ def compute_metric(instance: Metric):
                     pass
             if movements:
                 result = instance.calculate(movements)
-                averages[user_id].append(result.average)
-                medians[user_id].append(result.median)
-    return averages, medians
+                results["averages"][user_id].append(result.average)
+                results["medians"][user_id].append(result.median)
+    return results

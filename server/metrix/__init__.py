@@ -27,7 +27,7 @@ class Result:
 
     @property
     def median(self):
-        return np.average(self.data)
+        return np.median(self.data)
 
     @property
     def std_dev(self):
