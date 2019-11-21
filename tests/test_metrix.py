@@ -1,9 +1,7 @@
 from unittest import TestCase
 
 from server.metrix.acceleration import Acceleration
-from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.jerk import Jerk
-from server.metrix.magnitude import Magnitude
 from server.metrix.velocity import Velocity
 
 movements = [{"session_id": "test",
