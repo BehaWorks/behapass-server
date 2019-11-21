@@ -1,9 +1,11 @@
 from unittest import TestCase
 
-from server.metrix.acceleration import Acceleration
-from server.metrix.velocity import Velocity
 from server.models.movement import Movement
+from server.metrix.acceleration import Acceleration
+from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.jerk import Jerk
+from server.metrix.magnitude import Magnitude
+from server.metrix.velocity import Velocity
 from server.metrix.device_distance import Device_distance
 
 movements = [Movement.from_dict({"session_id": "test",
@@ -24,15 +26,20 @@ movements = [Movement.from_dict({"session_id": "test",
 
 class TestMetrix(TestCase):
     inputs = [
-        {"instance": Velocity(), "input": movements,
-         "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
-                    221.7025034, 443.4050067, 886.8100135]},
         {"instance": Acceleration(), "input": movements,
          "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
                     221.7025034, 443.4050067, 886.8100135]},
+        {"instance": AngularVelocity(), "input": movements,
+         "output": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]},
         {"instance": Jerk(), "input": movements,
          "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
                     221.7025034, 443.4050067, 886.8100135]},
+        {"instance": Magnitude(), "input": movements,
+         "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
+                    221.7025034, 443.4050067, 886.8100135]},
+        {"instance": Velocity(), "input": movements,
+         "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
+                    221.7025034, 443.4050067, 886.8100135]}
         {"instance": Device_distance(), "input": movements,
          "output": [53.69357503, 107.3871501, 214.7743001, 429.5486003, 859.0972006]}
     ]
@@ -41,4 +48,4 @@ class TestMetrix(TestCase):
         for i in self.inputs:
             result = i["instance"].calculate(i["input"])
             for actual, expected in zip(result.data, i["output"]):
-                self.assertAlmostEqual(actual, expected)
+                self.assertAlmostEqual(actual, expected, msg=i["instance"].__class__.__name__)
