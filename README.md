@@ -9,7 +9,7 @@ Vyžaduje sa Python 3 alebo novší. Na nainštalovanie všetkých závislostí 
 1. Skontrolovať závislosti, najmä Python 3 a pip, prípadne si vytvoriť a aktivovať Python virtual enviroment.  
 2. Pullnúť tento repozitár.  
 3. Inštaláciu vykonať prikazom: `pip install -e .` z koreňového priečinku tohto repozitára.  
-4. Nastaviť konfiguráciu v súbore `config/config.py` podľa predlohy `config/default.py` najmä pripojenie k MongoDB.  
+4. Nastaviť konfiguráciu v súbore `server/config/config.py` podľa predlohy `server/config/default.py` najmä pripojenie k MongoDB.  
 
 Primárnym spúšťačom je súbor `logger.py`, no do produkcie odporúčame použiť niektorý z produkčných Python serverov, napríklad [Gunicorn](https://gunicorn.org/). 
 
@@ -20,3 +20,4 @@ Dokumentácia je k dispozícií na adrese `<URL_PREFIX>/documentation`
 Na adrese `/visualisations` je možné zobraziť vizualizácie nalogovaných dát. Vizualizácie sú rozdelené podľa mena používateľa. Každý používateľ má niekoľko sessions. Jedna session reprezenuje jeden pohyb.
 
 Na opätovné spustenie animácie grafu treba obnoviť stránku.
+

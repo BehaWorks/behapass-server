@@ -2,23 +2,24 @@ from unittest import TestCase
 
 from server.metrix.acceleration import Acceleration
 from server.metrix.velocity import Velocity
+from server.models.movement import Movement
 from server.metrix.jerk import Jerk
 from server.metrix.device_distance import Device_distance
 
-movements = [{"session_id": "test",
-              "user_id": "test",
-              "timestamp": i,
-              "controller_id": "LHR-BE784403" if i < 5 else "LHR-FDEB3942",
-              "x": 2 ** i,
-              "y": 2 ** i,
-              "z": 2 ** i,
-              "yaw": "test",
-              "pitch": "test",
-              "roll": "test",
-              "r_x": "test",
-              "r_y": "test",
-              "r_z": "test",
-              } for i in range(11)]
+movements = [Movement.from_dict({"session_id": "test",
+                                 "user_id": "test",
+                                 "timestamp": i,
+                                 "controller_id": "LHR-BE784403" if i < 5 else "LHR-FDEB3942",
+                                 "x": 2 ** i,
+                                 "y": 2 ** i,
+                                 "z": 2 ** i,
+                                 "yaw": "test",
+                                 "pitch": "test",
+                                 "roll": "test",
+                                 "r_x": "test",
+                                 "r_y": "test",
+                                 "r_z": "test",
+                                 }) for i in range(11)]
 
 
 class TestMetrix(TestCase):
@@ -32,8 +33,8 @@ class TestMetrix(TestCase):
         {"instance": Jerk(), "input": movements,
          "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
                     221.7025034, 443.4050067, 886.8100135]}
-        # {"instance": Device_distance(), "input": movements,
-        #  "output": [53.69357503, 107.3871501, 214.7743001, 429.5486003, 859.0972006]},
+        {"instance": Device_distance(), "input": movements,
+         "output": [53.69357503, 107.3871501, 214.7743001, 429.5486003, 859.0972006]},
     ]
 
     def test_calculate(self):
