@@ -15,10 +15,10 @@ class Device_distance(Metric):
         hmd_coordinates = []
 
         for movement in movements:
-            if movement['controller_id'] == 'LHR-BE784403':
-                hmd_coordinates.append([movement['x'], movement['y'], movement['z']])
+            if movement.controller_id == 'LHR-BE784403':
+                hmd_coordinates.append([movement.x, movement.y, movement.z])
             else:
-                controller_coordinates.append([movement['x'], movement['y'], movement['z']])
+                controller_coordinates.append([movement.x, movement.y, movement.z])
 
         return controller_coordinates, hmd_coordinates
 
