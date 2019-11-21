@@ -1,18 +1,5 @@
 import numpy as np
-
-
-class Metric:
-    """
-    Base class for metrics. Subclass this class for individual metrics.
-    """
-
-    def calculate(self, data) -> 'Result':
-        """
-
-        :type data: list[Movement]
-        :return:
-        """
-        raise AttributeError('This is a base class. Subclass this class for individual metrics.')
+import vg
 
 
 class Result:
@@ -27,7 +14,7 @@ class Result:
 
     @property
     def median(self):
-        return np.average(self.data)
+        return np.median(self.datax)
 
     @property
     def std_dev(self):
@@ -44,3 +31,51 @@ class Result:
     @property
     def interquartile_range(self):
         return self.upper_q - self.lower_q
+
+
+class Metric:
+    """
+    Base class for metrics. Subclass this class for individual metrics.
+    """
+
+    def calculate(self, movements) -> Result:
+        """
+        :type movements: list[Movement]
+        :return:
+        """
+        raise AttributeError('This is a base class. Subclass this class for individual metrics.')
+
+    @staticmethod
+    def extract_points_timestamps(movements):
+        points = [np.array([movement['x'], movement['y'], movement['z']]) for movement in movements]
+        timestamps = [np.array(movement['timestamp']) for movement in movements]
+        return points, timestamps
+
+    @staticmethod
+    def derivative_wrt_time(function, values, timestamps):
+        derivatives = []
+        actual_values = values.pop(0)
+        actual_timestamp = timestamps.pop(0)
+        for next_values, next_timestamp in zip(values, timestamps):
+            timestamp_dif = next_timestamp - actual_timestamp
+            derivatives.append(function(next_values, actual_values) / timestamp_dif)
+            actual_timestamp = next_timestamp
+            actual_values = next_values
+        return derivatives
+
+    @staticmethod
+    def distance(a, b):
+        a = np.array(a)
+        b = np.array(b)
+        dif = a - b
+        squared = dif ** 2
+        try:
+            return np.sqrt(sum(squared))
+        except TypeError:
+            return np.sqrt(squared)
+
+    @staticmethod
+    def angle(a, b):
+        a = np.array(a)
+        b = np.array(b)
+        return vg.angle(a, b)
