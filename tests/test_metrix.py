@@ -2,7 +2,6 @@ from unittest import TestCase
 
 from server.models.movement import Movement
 from server.metrix.acceleration import Acceleration
-from server.metrix.velocity import Velocity
 from server.metrix.jerk import Jerk
 from server.metrix.velocity import Velocity
 

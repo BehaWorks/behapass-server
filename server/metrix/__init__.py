@@ -3,6 +3,8 @@ import vg
 
 from . import *
 
+__all__ = ["Metric", "acceleration", "jerk", "velocity"]
+
 
 class Result:
     data = None
@@ -35,7 +37,6 @@ class Result:
         return self.upper_q - self.lower_q
 
 
-__all__ = ["Metric", "velocity", "acceleration", "jerk"]
 class Metric:
     """
     Base class for metrics. Subclass this class for individual metrics.
@@ -50,15 +51,18 @@ class Metric:
 
     @staticmethod
     def extract_points_timestamps(movements):
-        points = [np.array([movement['x'], movement['y'], movement['z']]) for movement in movements]
-        timestamps = [np.array(movement['timestamp']) for movement in movements]
+        points = [np.array([movement.x, movement.y, movement.z]) for movement in movements]
+        timestamps = [np.array(movement.timestamp) for movement in movements]
         return points, timestamps
 
     @staticmethod
     def derivative_wrt_time(function, values, timestamps):
         derivatives = []
-        actual_values = values.pop(0)
-        actual_timestamp = timestamps.pop(0)
+        try:
+            actual_values = values.pop(0)
+            actual_timestamp = timestamps.pop(0)
+        except IndexError:
+            return []
         for next_values, next_timestamp in zip(values, timestamps):
             timestamp_dif = next_timestamp - actual_timestamp
             derivatives.append(function(next_values, actual_values) / timestamp_dif)
@@ -84,11 +88,11 @@ class Metric:
         return vg.angle(a, b)
 
 
-    def get_all_subclasses_instances(cls):
-        all_subclasses = []
+def get_all_subclasses_instances(cls):
+    all_subclasses = []
 
-        for subclass in cls.__subclasses__():
-            all_subclasses.append(subclass)
-            all_subclasses.extend(get_all_subclasses_instances(subclass))
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses_instances(subclass))
 
-        return all_subclasses
+    return all_subclasses
