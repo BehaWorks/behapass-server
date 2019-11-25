@@ -1,6 +1,5 @@
 import numpy as np
 import vg
-import math
 
 from . import *
 
@@ -56,7 +55,6 @@ class Metric:
         timestamps = [np.array(movement.timestamp) for movement in movements]
         return points, timestamps
 
-
     @staticmethod
     def derivative_wrt_time(function, values, timestamps):
         derivatives = []
@@ -72,27 +70,14 @@ class Metric:
             actual_values = next_values
         return derivatives
 
+    @classmethod
+    def extract_device_points(cls, movements, device_id):
+        device_movements = [movement for movement in movements if movement.controller_id == device_id]
+        return cls.extract_points_timestamps(device_movements)[0]
 
-    def extract_coordinates_of_both_devices(self, movements):
-        controller_coordinates = []
-        hmd_coordinates = []
-
-        for movement in movements:
-            if movement.controller_id == 'LHR-BE784403':
-                hmd_coordinates.append([movement.x, movement.y, movement.z])
-            else:
-                controller_coordinates.append([movement.x, movement.y, movement.z])
-
-        return controller_coordinates, hmd_coordinates
-
-
-    def calculate_device_distance(self, function, controller_coordinates, hmd_coordinates):
-        device_distances = []
-
-        for hmd,controller in zip(hmd_coordinates, controller_coordinates):
-            device_distances.append(function(hmd, controller))
-
-        return device_distances
+    @classmethod
+    def distances_between_points(cls, points1, points2):
+        return [cls.distance(point1, point2) for point1, point2 in zip(points1, points2)]
 
     @staticmethod
     def distance(a, b):
