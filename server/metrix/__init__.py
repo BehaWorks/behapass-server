@@ -3,7 +3,7 @@ import vg
 
 from . import *
 
-__all__ = ["Metric", "acceleration", "angular_velocity", "jerk", "magnitude", "velocity"]
+__all__ = ["Metric", "acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
 
 
 class Result:
