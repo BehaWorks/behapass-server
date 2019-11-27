@@ -41,4 +41,4 @@ jobs:
       env: 
         DEPLOY_KEY: ${{secrets.DEPLOYMENT_KEY}} 
       with: 
-        args: "-ae bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/python/logger"
+        args: "-ae, ,bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/python/logger"
