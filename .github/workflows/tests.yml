@@ -1,6 +1,9 @@
-name: Python application
+name: Logger test build
 
-on: [push]
+on: 
+  push:
+    branches-ignore: 
+      - "!master"
 
 jobs:
   build:
