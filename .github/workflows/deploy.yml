@@ -3,7 +3,7 @@ name: Logger deploy build
 on: 
   push:
     branches: 
-      - "!master"
+      - "master"
 
 jobs:
   deploy:
