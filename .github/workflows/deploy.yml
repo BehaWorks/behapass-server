@@ -43,5 +43,5 @@ jobs:
       with: 
         args: 
           -ae
-          -
+          -""
           -bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/python/logger
