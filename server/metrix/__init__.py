@@ -3,7 +3,7 @@ import vg
 
 from . import *
 
-__all__ = ["Metric", "acceleration", "angular_velocity", "jerk", "magnitude", "velocity"]
+__all__ = ["Metric", "acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
 
 
 class Result:
@@ -69,6 +69,15 @@ class Metric:
             actual_timestamp = next_timestamp
             actual_values = next_values
         return derivatives
+
+    @classmethod
+    def extract_device_points(cls, movements, device_id):
+        device_movements = [movement for movement in movements if movement.controller_id == device_id]
+        return cls.extract_points_timestamps(device_movements)[0]
+
+    @classmethod
+    def distances_between_points(cls, points1, points2):
+        return [cls.distance(point1, point2) for point1, point2 in zip(points1, points2)]
 
     @staticmethod
     def distance(a, b):
