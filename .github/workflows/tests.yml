@@ -3,7 +3,7 @@ name: Logger test build
 on: 
   push:
     branches-ignore: 
-      - "!master"
+      - "master"
 
 jobs:
   build:
