@@ -47,5 +47,6 @@ class TestMetrix(TestCase):
     def test_calculate(self):
         for i in self.inputs:
             result = i["instance"].calculate(i["input"])
+            expected: float
             for actual, expected in zip(result.data, i["output"]):
                 self.assertAlmostEqual(actual, expected, msg=i["instance"].__class__.__name__)
