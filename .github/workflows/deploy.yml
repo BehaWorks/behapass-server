@@ -40,9 +40,9 @@ jobs:
       uses: AEnterprise/rsync-deploy@v1.0
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
-        ARGS: "-a -e"
+        ARGS: "-a -e -v"
         SERVER_PORT: 22
-        FOLDER: "."
+        FOLDER: "*"
         SERVER_IP: team12-19.studenti.fiit.stuba.sk
         USERNAME: bitbucket
         SERVER_DESTINATION: /var/www/python/logger
