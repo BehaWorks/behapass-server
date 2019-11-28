@@ -34,7 +34,7 @@ class Result:
 
     @property
     def minimum(self):
-        return np.amin(self.data)
+        return np.min(self.data)
 
     @property
     def maximum(self):
@@ -108,7 +108,7 @@ class Metric:
 class MetrixVector:
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                 magnitude: Result, device_distance: Result, session_id, user_id) -> None:
+                 device_distance: Result, session_id, user_id) -> None:
         self.data = {
             "user_id": user_id,
             "session_id": session_id,
@@ -136,12 +136,6 @@ class MetrixVector:
             "angular_velocity_maximum": angular_velocity.maximum,
             "angular_velocity_std_dev": angular_velocity.std_dev,
             "angular_velocity_iqr": angular_velocity.upper_q - angular_velocity.lower_q,
-            "magnitude_average": magnitude.average,
-            "magnitude_median": magnitude.median,
-            "magnitude_minimum": magnitude.minimum,
-            "magnitude_maximum": magnitude.maximum,
-            "magnitude_std_dev": magnitude.std_dev,
-            "magnitude_iqr": magnitude.upper_q - magnitude.lower_q,
             "device_distance_average": device_distance.average,
             "device_distance_median": device_distance.median,
             "device_distance_minimum": device_distance.minimum,

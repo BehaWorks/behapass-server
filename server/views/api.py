@@ -10,7 +10,6 @@ from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
-from server.metrix.magnitude import Magnitude
 from server.metrix.velocity import Velocity
 from server.models.movement import Movement, HEADSET, PRIMARY_CONTROLER
 from utils.json import JSONEncoder
@@ -88,13 +87,11 @@ class LoggerRecord(Resource):
         acceleration_result = Acceleration().calculate(controller_data)
         jerk_result = Jerk().calculate(controller_data)
         angular_velocity_result = AngularVelocity().calculate(controller_data)
-        magnitude_result = Magnitude().calculate(controller_data)
         device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
 
         test_metrix_collection.insert(
             MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
-                         magnitude_result, device_distance_result, controller_data[0].session_id,
-                         controller_data[0].user_id).to_dict())
+                         device_distance_result, controller_data[0].session_id, controller_data[0].user_id).to_dict())
         return {
             "status": "OK"
         }
