@@ -1,10 +1,6 @@
 import numpy as np
 import vg
 
-from . import *
-
-__all__ = ["acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
-
 
 class Result:
     data = None
@@ -31,6 +27,10 @@ class Result:
     @property
     def lower_q(self):
         return np.quantile(self.data, 0.25)
+
+    @property
+    def minimum(self):
+        return np.min(self.data)
 
     @property
     def interquartile_range(self):
@@ -81,27 +81,8 @@ class Metric:
 
     @staticmethod
     def distance(a, b):
-        a = np.array(a)
-        b = np.array(b)
-        dif = a - b
-        squared = dif ** 2
-        try:
-            return np.sqrt(sum(squared))
-        except TypeError:
-            return np.sqrt(squared)
+        return np.linalg.norm(a - b)
 
     @staticmethod
     def angle(a, b):
-        a = np.array(a)
-        b = np.array(b)
         return vg.angle(a, b)
-
-
-def get_all_subclasses_instances(cls):
-    all_subclasses = []
-
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(get_all_subclasses_instances(subclass))
-
-    return all_subclasses
