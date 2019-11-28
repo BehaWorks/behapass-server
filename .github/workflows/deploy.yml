@@ -36,20 +36,11 @@ jobs:
     - name: Test
       run: |
         python3 -m unittest discover tests/
-#    - name: rsync deployments
-#      uses: contention/rsync-deployments@master
-#      env: 
-#        DEPLOY_KEY: ${{secrets.DEPLOYMENT_KEY}} 
-#      with: 
-#        args: 
-#          -ae
-#          -""
-#          -bitbucket@team12-19.studenti.fiit.stuba.sk:/var/www/python/logger
     - name: deploy to server
       uses: AEnterprise/rsync-deploy@v1.0
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
-        ARGS: "-e -e"
+        ARGS: "-a -e"
         SERVER_PORT: 22
         FOLDER: "."
         SERVER_IP: team12-19.studenti.fiit.stuba.sk
