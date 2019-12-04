@@ -106,6 +106,7 @@ class Metric:
 
 
 class MetrixVector:
+    VECTOR_LENGTH = 31
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
                  device_distance: Result, session_id, user_id) -> None:
@@ -147,3 +148,13 @@ class MetrixVector:
 
     def to_dict(self):
         return self.data
+
+
+def create_Metrix_Vector(controller_data, headset_data) -> MetrixVector:
+    velocity_result = velocity.Velocity().calculate(controller_data)
+    acceleration_result = acceleration.Acceleration().calculate(controller_data)
+    # jerk_result = jerk.Jerk().calculate(controller_data)
+    # angular_velocity_result = angular_velocity.AngularVelocity().calculate(controller_data)
+    # device_distance_result = device_distance.DeviceDistance().calculate(controller_data + headset_data)
+    return MetrixVector(velocity_result, acceleration_result, acceleration_result, velocity_result,
+                        acceleration_result, controller_data[0].session_id, controller_data[0].user_id)

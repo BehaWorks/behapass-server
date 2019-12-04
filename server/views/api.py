@@ -1,16 +1,13 @@
+import json
 from typing import List
 
-import pymongo
+import pandas as pd
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
-from server import app
-from server.metrix import MetrixVector
-from server.metrix.acceleration import Acceleration
-from server.metrix.angular_velocity import AngularVelocity
-from server.metrix.device_distance import DeviceDistance
-from server.metrix.jerk import Jerk
-from server.metrix.velocity import Velocity
+from server import app, model
+from server.db import create_db
+from server.metrix import create_Metrix_Vector
 from server.models.movement import Movement, HEADSET, PRIMARY_CONTROLER
 from utils.json import JSONEncoder
 
@@ -55,25 +52,20 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
 
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
-mongo = pymongo.MongoClient(config["DB_HOST"], )
-db = mongo[config["DB_NAME"]]
-test_movement_collection = db["test_movement"]
-test_button_collection = db["test_button"]
-test_metrix_collection = db["test_metrix"]
-
+db = create_db()
 
 @namespace.route("/")
 class LoggerRecord(Resource):
 
     @logger.marshal_with(logger_record)
     def get(self):
-        return {"movements": list(test_movement_collection.find()),
-                "buttons": list(test_button_collection.find())}
+        return {"movements": list(db.get_all_movements()),
+                "buttons": list(db.get_all_buttons())}
 
     @logger.expect(logger_record)
     def post(self):
-        test_movement_collection.insert_many(request.json["movements"])
-        test_button_collection.insert_many(request.json["buttons"])
+        db.insert_movements(request.json["movements"])
+        db.insert_buttons(request.json["buttons"])
 
         controller_data: List[Movement] = []
         headset_data = []
@@ -83,15 +75,8 @@ class LoggerRecord(Resource):
                 headset_data.append(m)
             elif m.controller_id == PRIMARY_CONTROLER:
                 controller_data.append(m)
-        velocity_result = Velocity().calculate(controller_data)
-        acceleration_result = Acceleration().calculate(controller_data)
-        jerk_result = Jerk().calculate(controller_data)
-        angular_velocity_result = AngularVelocity().calculate(controller_data)
-        device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
 
-        test_metrix_collection.insert(
-            MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
-                         device_distance_result, controller_data[0].session_id, controller_data[0].user_id).to_dict())
+        db.insert_metrix(create_Metrix_Vector(controller_data, headset_data).to_dict())
         return {
             "status": "OK"
         }
@@ -102,7 +87,7 @@ class MovementRecord(Resource):
 
     @logger.marshal_with(movement_record)
     def get(self):
-        return list(test_movement_collection.find())
+        return list(db.get_all_movements())
 
 
 @namespace.route("/buttons")
@@ -110,4 +95,24 @@ class ButtonRecord(Resource):
 
     @logger.marshal_with(button_record)
     def get(self):
-        return list(test_button_collection.find())
+        return list(db.get_all_buttons())
+
+
+@namespace.route("/lookup")
+class Lookup(Resource):
+
+    @logger.expect(logger_record)
+    def post(self):
+        controller_data: List[Movement] = []
+        headset_data = []
+        for i in request.json["movements"]:
+            m = Movement.from_dict(i)
+            if m.controller_id == HEADSET:
+                headset_data.append(m)
+            elif m.controller_id == PRIMARY_CONTROLER:
+                controller_data.append(m)
+        vector = create_Metrix_Vector(controller_data, headset_data)
+        df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
+        df = df.drop("user_id", axis="columns")
+        df = df.drop("session_id", axis="columns")
+        return json.dumps(model.search(df.to_numpy("float32"), 5))
