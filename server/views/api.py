@@ -5,14 +5,15 @@ from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
 from server import app
+from server.models.movement import HEADSET, CONTROLLER_1, CONTROLLER_2
 from server.metrix import MetrixVector
 from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
 from server.metrix.velocity import Velocity
-from server.models.movement import Movement, HEADSET, PRIMARY_CONTROLER
 from utils.json import JSONEncoder
+from server.models.movement import Movement
 
 config = app.config
 
@@ -27,7 +28,10 @@ namespace = logger.namespace('logger', description='Logger APIs')
 movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
                                                    'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
-                                                   'controller_id': fields.String(required=True),
+                                                   'controller_id': fields.String(required=True,
+                                                                                  enum=[HEADSET,
+                                                                                        CONTROLLER_1,
+                                                                                        CONTROLLER_2]),
                                                    'x': fields.Float(required=True),
                                                    'y': fields.Float(required=True),
                                                    'z': fields.Float(required=True),
@@ -81,7 +85,7 @@ class LoggerRecord(Resource):
             m = Movement.from_dict(i)
             if m.controller_id == HEADSET:
                 headset_data.append(m)
-            elif m.controller_id == PRIMARY_CONTROLER:
+            elif m.controller_id == CONTROLLER_1:
                 controller_data.append(m)
         velocity_result = Velocity().calculate(controller_data)
         acceleration_result = Acceleration().calculate(controller_data)
