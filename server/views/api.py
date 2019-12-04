@@ -1,9 +1,17 @@
+from typing import List
+
 import pymongo
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
 from server import app
 from server.models.movement import HEADSET, CONTROLLER_1, CONTROLLER_2
+from server.metrix import MetrixVector
+from server.metrix.acceleration import Acceleration
+from server.metrix.angular_velocity import AngularVelocity
+from server.metrix.device_distance import DeviceDistance
+from server.metrix.jerk import Jerk
+from server.metrix.velocity import Velocity
 from utils.json import JSONEncoder
 
 config = app.config
@@ -54,6 +62,7 @@ mongo = pymongo.MongoClient(config["DB_HOST"], )
 db = mongo[config["DB_NAME"]]
 test_movement_collection = db["test_movement"]
 test_button_collection = db["test_button"]
+test_metrix_collection = db["test_metrix"]
 
 
 @namespace.route("/")
@@ -68,6 +77,24 @@ class LoggerRecord(Resource):
     def post(self):
         test_movement_collection.insert_many(request.json["movements"])
         test_button_collection.insert_many(request.json["buttons"])
+
+        controller_data: List[Movement] = []
+        headset_data = []
+        for i in request.json["movements"]:
+            m = Movement.from_dict(i)
+            if m.controller_id == HEADSET:
+                headset_data.append(m)
+            elif m.controller_id == PRIMARY_CONTROLER:
+                controller_data.append(m)
+        velocity_result = Velocity().calculate(controller_data)
+        acceleration_result = Acceleration().calculate(controller_data)
+        jerk_result = Jerk().calculate(controller_data)
+        angular_velocity_result = AngularVelocity().calculate(controller_data)
+        device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
+
+        test_metrix_collection.insert(
+            MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
+                         device_distance_result, controller_data[0].session_id, controller_data[0].user_id).to_dict())
         return {
             "status": "OK"
         }

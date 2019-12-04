@@ -1,10 +1,6 @@
 import numpy as np
 import vg
 
-from . import *
-
-__all__ = ["Metric", "acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
-
 
 class Result:
     data = None
@@ -31,6 +27,14 @@ class Result:
     @property
     def lower_q(self):
         return np.quantile(self.data, 0.25)
+
+    @property
+    def minimum(self):
+        return np.min(self.data)
+
+    @property
+    def maximum(self):
+        return np.max(self.data)
 
     @property
     def interquartile_range(self):
@@ -81,27 +85,52 @@ class Metric:
 
     @staticmethod
     def distance(a, b):
-        a = np.array(a)
-        b = np.array(b)
-        dif = a - b
-        squared = dif ** 2
-        try:
-            return np.sqrt(sum(squared))
-        except TypeError:
-            return np.sqrt(squared)
+        return np.linalg.norm(a - b)
 
     @staticmethod
     def angle(a, b):
-        a = np.array(a)
-        b = np.array(b)
         return vg.angle(a, b)
 
 
-def get_all_subclasses_instances(cls):
-    all_subclasses = []
+class MetrixVector:
 
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(get_all_subclasses_instances(subclass))
+    def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
+                 device_distance: Result, session_id, user_id) -> None:
+        self.data = {
+            "user_id": user_id,
+            "session_id": session_id,
+            "velocity_average": velocity.average,
+            "velocity_median": velocity.median,
+            "velocity_minimum": velocity.minimum,
+            "velocity_maximum": velocity.maximum,
+            "velocity_std_dev": velocity.std_dev,
+            "velocity_iqr": velocity.upper_q - velocity.lower_q,
+            "acceleration_average": acceleration.average,
+            "acceleration_median": acceleration.median,
+            "acceleration_minimum": acceleration.minimum,
+            "acceleration_maximum": acceleration.maximum,
+            "acceleration_std_dev": acceleration.std_dev,
+            "acceleration_iqr": acceleration.upper_q - acceleration.lower_q,
+            "jerk_average": jerk.average,
+            "jerk_median": jerk.median,
+            "jerk_minimum": jerk.minimum,
+            "jerk_maximum": jerk.maximum,
+            "jerk_std_dev": jerk.std_dev,
+            "jerk_iqr": jerk.upper_q - jerk.lower_q,
+            "angular_velocity_average": angular_velocity.average,
+            "angular_velocity_median": angular_velocity.median,
+            "angular_velocity_minimum": angular_velocity.minimum,
+            "angular_velocity_maximum": angular_velocity.maximum,
+            "angular_velocity_std_dev": angular_velocity.std_dev,
+            "angular_velocity_iqr": angular_velocity.upper_q - angular_velocity.lower_q,
+            "device_distance_average": device_distance.average,
+            "device_distance_median": device_distance.median,
+            "device_distance_minimum": device_distance.minimum,
+            "device_distance_maximum": device_distance.maximum,
+            "device_distance_std_dev": device_distance.std_dev,
+            "device_distance_iqr": device_distance.upper_q - device_distance.lower_q
+        }
+        pass
 
-    return all_subclasses
+    def to_dict(self):
+        return self.data
