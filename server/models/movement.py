@@ -2,6 +2,7 @@ from attr import dataclass
 
 HEADSET, CONTROLLER_1, CONTROLLER_2 = "hmd", "controller-1", "controller-2"
 
+
 @dataclass
 class Movement:
     session_id: str

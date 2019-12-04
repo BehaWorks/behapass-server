@@ -19,7 +19,7 @@ blueprint = Blueprint('visualisations', __name__)
 
 mongo = pymongo.MongoClient(config["DB_HOST"], )
 db = mongo[config["DB_NAME"]]
-movement_collection = db["test_movement"]
+movement_collection = db["movement"]
 
 
 def get_user_ids():

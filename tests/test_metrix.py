@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from server.models.movement import Movement
+from server.models.movement import Movement, HEADSET, CONTROLLER_1
 from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.jerk import Jerk
@@ -10,7 +10,7 @@ from server.metrix.device_distance import DeviceDistance
 movements = [Movement.from_dict({"session_id": "test",
                                  "user_id": "test",
                                  "timestamp": i,
-                                 "controller_id": "LHR-BE784403" if i < 5 else "LHR-FDEB3942",
+                                 "controller_id": HEADSET if i < 5 else CONTROLLER_1,
                                  "x": 2 ** i,
                                  "y": 2 ** i,
                                  "z": 2 ** i,
