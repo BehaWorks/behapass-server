@@ -1,10 +1,6 @@
 import numpy as np
 import vg
 
-from . import *
-
-__all__ = ["acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
-
 
 class Result:
     data = None
@@ -89,19 +85,10 @@ class Metric:
 
     @staticmethod
     def distance(a, b):
-        a = np.array(a)
-        b = np.array(b)
-        dif = a - b
-        squared = dif ** 2
-        try:
-            return np.sqrt(sum(squared))
-        except TypeError:
-            return np.sqrt(squared)
+        return np.linalg.norm(a - b)
 
     @staticmethod
     def angle(a, b):
-        a = np.array(a)
-        b = np.array(b)
         return vg.angle(a, b)
 
 
