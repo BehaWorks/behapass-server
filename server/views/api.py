@@ -13,6 +13,7 @@ from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
 from server.metrix.velocity import Velocity
 from utils.json import JSONEncoder
+from server.models.movement import Movement
 
 config = app.config
 
@@ -84,7 +85,7 @@ class LoggerRecord(Resource):
             m = Movement.from_dict(i)
             if m.controller_id == HEADSET:
                 headset_data.append(m)
-            elif m.controller_id == PRIMARY_CONTROLER:
+            elif m.controller_id == CONTROLLER_1:
                 controller_data.append(m)
         velocity_result = Velocity().calculate(controller_data)
         acceleration_result = Acceleration().calculate(controller_data)
