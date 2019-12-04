@@ -3,6 +3,7 @@ from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
 from server import app
+from server.models.movement import HEADSET, CONTROLLER_1, CONTROLLER_2
 from utils.json import JSONEncoder
 
 config = app.config
@@ -18,7 +19,10 @@ namespace = logger.namespace('logger', description='Logger APIs')
 movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
                                                    'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
-                                                   'controller_id': fields.String(required=True),
+                                                   'controller_id': fields.String(required=True,
+                                                                                  enum=[HEADSET,
+                                                                                        CONTROLLER_1,
+                                                                                        CONTROLLER_2]),
                                                    'x': fields.Float(required=True),
                                                    'y': fields.Float(required=True),
                                                    'z': fields.Float(required=True),

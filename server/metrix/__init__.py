@@ -72,7 +72,7 @@ class Metric:
 
     @classmethod
     def extract_device_points(cls, movements, device_id):
-        device_movements = [movement for movement in movements if movement.controller_id == device_id]
+        device_movements = [movement for movement in movements if movement.controller_id in device_id]
         return cls.extract_points_timestamps(device_movements)[0]
 
     @classmethod
