@@ -13,9 +13,9 @@ class Mongo():
         super().__init__()
         self.mongo = pymongo.MongoClient(config["DB_HOST"])
         self.db = self.mongo[config["DB_NAME"]]
-        self.test_movement_collection = self.db["test_movement"]
-        self.test_button_collection = self.db["test_button"]
-        self.test_metrix_collection = self.db["test_metrix"]
+        self.test_movement_collection = self.db["movement"]
+        self.test_button_collection = self.db["button"]
+        self.test_metrix_collection = self.db["metrix"]
 
     def get_all_movements(self):
         return self.test_movement_collection.find()

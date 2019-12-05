@@ -1,7 +1,7 @@
 from attr import dataclass
 
-HEADSET = 'LHR-BE784403'
-PRIMARY_CONTROLER = 'LHR-BE784403'
+HEADSET = 'hmd'
+PRIMARY_CONTROLER = 'controller-1'
 
 @dataclass
 class Movement:

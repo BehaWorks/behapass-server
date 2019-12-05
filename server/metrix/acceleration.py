@@ -1,4 +1,4 @@
-from . import Result
+from server.metrix.result import Result
 from .velocity import Velocity
 
 

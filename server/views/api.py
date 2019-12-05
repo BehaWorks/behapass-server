@@ -1,4 +1,3 @@
-import json
 from typing import List
 
 import pandas as pd
@@ -52,6 +51,10 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
 
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
+
+lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
+                                               "distance": fields.Float(required=True)})
+
 db = create_db()
 
 @namespace.route("/")
@@ -102,6 +105,7 @@ class ButtonRecord(Resource):
 class Lookup(Resource):
 
     @logger.expect(logger_record)
+    @logger.marshal_with(lookup_result)
     def post(self):
         controller_data: List[Movement] = []
         headset_data = []
@@ -115,4 +119,4 @@ class Lookup(Resource):
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
-        return json.dumps(model.search(df.to_numpy("float32"), 5))
+        return model.search(df.to_numpy("float32"), 5)

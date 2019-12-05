@@ -1,4 +1,5 @@
 import faiss
+import numpy as np
 import pandas as pd
 
 from server.db import create_db
@@ -18,7 +19,7 @@ class FaissIndexFlatL2():
         self.add(df.to_numpy("float32"))
 
     def add(self, vectors):
-        self.index.add(vectors)
+        self.index.add(np.ascontiguousarray(vectors))
 
     def search(self, data, k):
         distances, indices = self.index.search(data, k)

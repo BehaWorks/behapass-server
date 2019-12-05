@@ -4,9 +4,10 @@ import plotly.offline as po
 from flask import Blueprint, render_template, request
 
 from server.db import create_db
-from server.metrix import Result, Metric
 from server.metrix.acceleration import Acceleration
 from server.metrix.jerk import Jerk
+from server.metrix.metric import Metric
+from server.metrix.result import Result
 from server.metrix.velocity import Velocity
 from server.models.movement import Movement
 
