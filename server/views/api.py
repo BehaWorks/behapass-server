@@ -61,9 +61,9 @@ logger_record = logger.model('Logger record', {"movements": fields.List(fields.N
                                                "buttons": fields.List(fields.Nested(button_record))})
 mongo = pymongo.MongoClient(config["DB_HOST"], )
 db = mongo[config["DB_NAME"]]
-test_movement_collection = db["test_movement"]
-test_button_collection = db["test_button"]
-test_metrix_collection = db["test_metrix"]
+movement_collection = db["movement"]
+button_collection = db["button"]
+metrix_collection = db["metrix"]
 
 
 @namespace.route("/")
@@ -71,13 +71,13 @@ class LoggerRecord(Resource):
 
     @logger.marshal_with(logger_record)
     def get(self):
-        return {"movements": list(test_movement_collection.find()),
-                "buttons": list(test_button_collection.find())}
+        return {"movements": list(movement_collection.find()),
+                "buttons": list(button_collection.find())}
 
     @logger.expect(logger_record)
     def post(self):
-        test_movement_collection.insert_many(request.json["movements"])
-        test_button_collection.insert_many(request.json["buttons"])
+        movement_collection.insert_many(request.json["movements"])
+        button_collection.insert_many(request.json["buttons"])
 
         controller_data: List[Movement] = []
         headset_data = []
@@ -93,7 +93,7 @@ class LoggerRecord(Resource):
         angular_velocity_result = AngularVelocity().calculate(controller_data)
         device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
 
-        test_metrix_collection.insert(
+        metrix_collection.insert(
             MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
                          device_distance_result, controller_data[0].session_id, controller_data[0].user_id).to_dict())
         return {
@@ -106,7 +106,7 @@ class MovementRecord(Resource):
 
     @logger.marshal_with(movement_record)
     def get(self):
-        return list(test_movement_collection.find())
+        return list(movement_collection.find())
 
 
 @namespace.route("/buttons")
@@ -114,4 +114,4 @@ class ButtonRecord(Resource):
 
     @logger.marshal_with(button_record)
     def get(self):
-        return list(test_button_collection.find())
+        return list(button_collection.find())
