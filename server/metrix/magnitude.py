@@ -1,6 +1,7 @@
 import numpy as np
 
-from . import Metric, Result
+from server.metrix.metric import Metric
+from server.metrix.result import Result
 
 
 class Magnitude(Metric):

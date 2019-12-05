@@ -4,7 +4,7 @@ import pandas as pd
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
-from server import app, model
+from server import app, FaissIndexFlatL2
 from server.db import create_db
 from server.metrix import create_Metrix_Vector
 from server.models.movement import Movement, HEADSET, PRIMARY_CONTROLER
@@ -54,6 +54,16 @@ logger_record = logger.model('Logger record', {"movements": fields.List(fields.N
 
 lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
                                                "distance": fields.Float(required=True)})
+
+model = None
+
+
+def get_model():
+    global model
+    if model is None:
+        model = FaissIndexFlatL2()
+    return model
+
 
 db = create_db()
 
@@ -119,4 +129,4 @@ class Lookup(Resource):
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
-        return model.search(df.to_numpy("float32"), 5)
+        return get_model().search(df.to_numpy("float32"), 5)

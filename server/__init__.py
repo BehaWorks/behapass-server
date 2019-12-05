@@ -6,8 +6,6 @@ config = app.config
 
 from server.lookup.faiss import FaissIndexFlatL2
 
-model = FaissIndexFlatL2()
-
 from server.views import api
 from server.views import visualisations
 from server.db import create_db
