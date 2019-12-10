@@ -1,5 +1,5 @@
 # Logger
-Základný logger na logovanie pohybu vo VR spolu so stavom ovládaču napísaný vo [Flask-u](https://palletsprojects.com/p/flask/)s využitím [flask_restplus](https://flask-restplus.readthedocs.io/en/stable/).
+Základný logger na logovanie pohybu vo VR spolu so stavom ovládaču napísaný vo [Flask-u](https://palletsprojects.com/p/flask/) s využitím [flask_restplus](https://flask-restplus.readthedocs.io/en/stable/).
 
 Ako úložisko slúži [MongoDb](https://www.mongodb.com/).
 
@@ -21,3 +21,14 @@ Na adrese `/visualisations` je možné zobraziť vizualizácie nalogovaných dá
 
 Na opätovné spustenie animácie grafu treba obnoviť stránku.
 
+## Spúšťanie v Dockeri
+Treba mať nainštalovaný [Docker](https://docker.com). Na Windowse je to komplikovanejšie, s W10 Home Edition to nefunguje, ale W10 Education je pre [študentov FIIT zadarmo](http://msdnaa.fiit.stuba.sk/). 
+
+V kofigurácii musí byť URL nastavená na adresu stroja (```172.*```) na ktorom beží Docker z pohľadu kontajnera, ```localhost``` dá len adresu kontajnera. Adresa sa dá zistiť príkazom ```hostname -I``` v kontajneri. 
+
+Pri spúšťaní treba prepojiť lokálny súborový systém a porty s kontajnerom: 
+```
+docker run -p 5000:5000 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server behapass-server
+```
+```<C:/cesta/k/repozitaru>``` treba nahradiť skutočnou cestou, mala by sa končiť ```/logger```. Dvojbodka tam musí byť.
+Pri vytváraní konfigurácie v Idei treba dať do _Bind ports_ to čo je v prepínači ```-p``` a do Bind mounts to čo je vo ```-v```. 
