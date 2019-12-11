@@ -24,7 +24,7 @@ Na opätovné spustenie animácie grafu treba obnoviť stránku.
 ## Spúšťanie v Dockeri
 Treba mať nainštalovaný [Docker](https://docker.com). Na Windowse je to komplikovanejšie, s W10 Home Edition to nefunguje, ale W10 Education je pre [študentov FIIT zadarmo](http://msdnaa.fiit.stuba.sk/). 
 
-V kofigurácii musí byť URL nastavená na adresu stroja (```172.*```) na ktorom beží Docker z pohľadu kontajnera, ```localhost``` dá len adresu kontajnera. Adresa sa dá zistiť príkazom ```hostname -I``` v kontajneri. 
+V konfigurácii musí byť URL nastavená na adresu stroja (```172.*```) na ktorom beží Docker z pohľadu kontajnera, ```localhost``` dá len adresu kontajnera. Adresa sa dá zistiť príkazom ```hostname -I``` v kontajneri. 
 
 Pri spúšťaní treba prepojiť lokálny súborový systém a porty s kontajnerom: 
 ```
