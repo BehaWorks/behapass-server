@@ -28,7 +28,13 @@ V kofigurácii musí byť URL nastavená na adresu stroja (```172.*```) na ktoro
 
 Pri spúšťaní treba prepojiť lokálny súborový systém a porty s kontajnerom: 
 ```
-docker run -p 5000:5000 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server behapass-server
+docker run -p 8000:8000 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server behapass-server
 ```
 ```<C:/cesta/k/repozitaru>``` treba nahradiť skutočnou cestou, mala by sa končiť ```/logger```. Dvojbodka tam musí byť.
 Pri vytváraní konfigurácie v Idei treba dať do _Bind ports_ to čo je v prepínači ```-p``` a do Bind mounts to čo je vo ```-v```. 
+
+### Parametre docker imageu
+```port``` - port na ktorom má počúvať aplikácia v docker containeri. Default: ```8000```. Tento port treba otvoriť pri spúšťaní kontajneru. Príklad na spustenie na inom porte:
+```
+docker run -p 1234:1234 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server --env "port"="1234" behapass-server
+```
