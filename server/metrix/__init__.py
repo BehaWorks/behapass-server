@@ -5,7 +5,7 @@ from server.metrix.jerk import Jerk
 from server.metrix.metrix_vector import MetrixVector
 from server.metrix.velocity import Velocity
 
-__all__ = ["acceleration", "angular_velocity", "device_distance", "jerk", "magnitude", "velocity"]
+__all__ = ["acceleration", "angular_velocity", "device_distance", "jerk", "velocity"]
 
 def create_Metrix_Vector(controller_data, headset_data) -> MetrixVector:
     velocity_result = Velocity().calculate(controller_data)

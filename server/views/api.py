@@ -7,7 +7,7 @@ from flask_restplus import Resource, Api, fields
 from server import app, FaissIndexFlatL2
 from server.db import create_db
 from server.metrix import create_Metrix_Vector
-from server.models.movement import Movement, HEADSET, PRIMARY_CONTROLER
+from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
 from utils.json import JSONEncoder
 
 config = app.config
@@ -126,7 +126,7 @@ class Lookup(Resource):
             m = Movement.from_dict(i)
             if m.controller_id == HEADSET:
                 headset_data.append(m)
-            elif m.controller_id == PRIMARY_CONTROLER:
+            elif m.controller_id == CONTROLLER_1:
                 controller_data.append(m)
         vector = create_Metrix_Vector(controller_data, headset_data)
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
