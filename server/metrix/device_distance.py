@@ -1,5 +1,6 @@
-from server.models.movement import HEADSET, CONTROLLER_1, CONTROLLER_2
-from . import Metric, Result
+from server.metrix.metric import Metric
+from server.metrix.result import Result
+from server.models.movement import HEADSET, CONTROLLER_1
 
 
 class DeviceDistance(Metric):

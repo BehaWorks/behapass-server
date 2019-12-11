@@ -5,6 +5,7 @@ bson==0.5.8
 Click==7.0
 Flask==1.1.1
 flask-restplus==0.13.0
+faiss
 gunicorn==19.9.0
 importlib-metadata==0.23
 itsdangerous==1.1.0
@@ -12,7 +13,7 @@ Jinja2==2.10.3
 jsonschema==3.1.1
 MarkupSafe==1.1.1
 more-itertools==7.2.0
-pandas==0.23.4
+pandas==0.25.3
 plotly==4.2.1
 pymongo==3.9.0
 pyrsistent==0.15.4

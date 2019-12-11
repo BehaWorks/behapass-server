@@ -1,19 +1,14 @@
 from typing import List
 
-import pymongo
+import pandas as pd
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
-from server import app
-from server.models.movement import HEADSET, CONTROLLER_1, CONTROLLER_2
-from server.metrix import MetrixVector
-from server.metrix.acceleration import Acceleration
-from server.metrix.angular_velocity import AngularVelocity
-from server.metrix.device_distance import DeviceDistance
-from server.metrix.jerk import Jerk
-from server.metrix.velocity import Velocity
+from server import app, FaissIndexFlatL2
+from server.db import create_db
+from server.metrix import create_Metrix_Vector
+from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
 from utils.json import JSONEncoder
-from server.models.movement import Movement
 
 config = app.config
 
@@ -59,25 +54,34 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
 
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
-mongo = pymongo.MongoClient(config["DB_HOST"], )
-db = mongo[config["DB_NAME"]]
-movement_collection = db["movement"]
-button_collection = db["button"]
-metrix_collection = db["metrix"]
 
+lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
+                                               "distance": fields.Float(required=True)})
+
+model = None
+
+
+def get_model():
+    global model
+    if model is None:
+        model = FaissIndexFlatL2()
+    return model
+
+
+db = create_db()
 
 @namespace.route("/")
 class LoggerRecord(Resource):
 
     @logger.marshal_with(logger_record)
     def get(self):
-        return {"movements": list(movement_collection.find()),
-                "buttons": list(button_collection.find())}
+        return {"movements": list(db.get_all_movements()),
+                "buttons": list(db.get_all_buttons())}
 
     @logger.expect(logger_record)
     def post(self):
-        movement_collection.insert_many(request.json["movements"])
-        button_collection.insert_many(request.json["buttons"])
+        db.insert_movements(request.json["movements"])
+        db.insert_buttons(request.json["buttons"])
 
         controller_data: List[Movement] = []
         headset_data = []
@@ -87,15 +91,8 @@ class LoggerRecord(Resource):
                 headset_data.append(m)
             elif m.controller_id == CONTROLLER_1:
                 controller_data.append(m)
-        velocity_result = Velocity().calculate(controller_data)
-        acceleration_result = Acceleration().calculate(controller_data)
-        jerk_result = Jerk().calculate(controller_data)
-        angular_velocity_result = AngularVelocity().calculate(controller_data)
-        device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
 
-        metrix_collection.insert(
-            MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
-                         device_distance_result, controller_data[0].session_id, controller_data[0].user_id).to_dict())
+        db.insert_metrix(create_Metrix_Vector(controller_data, headset_data).to_dict())
         return {
             "status": "OK"
         }
@@ -106,7 +103,7 @@ class MovementRecord(Resource):
 
     @logger.marshal_with(movement_record)
     def get(self):
-        return list(movement_collection.find())
+        return list(db.get_all_movements())
 
 
 @namespace.route("/buttons")
@@ -114,4 +111,25 @@ class ButtonRecord(Resource):
 
     @logger.marshal_with(button_record)
     def get(self):
-        return list(button_collection.find())
+        return list(db.get_all_buttons())
+
+
+@namespace.route("/lookup")
+class Lookup(Resource):
+
+    @logger.expect(logger_record)
+    @logger.marshal_with(lookup_result)
+    def post(self):
+        controller_data: List[Movement] = []
+        headset_data = []
+        for i in request.json["movements"]:
+            m = Movement.from_dict(i)
+            if m.controller_id == HEADSET:
+                headset_data.append(m)
+            elif m.controller_id == CONTROLLER_1:
+                controller_data.append(m)
+        vector = create_Metrix_Vector(controller_data, headset_data)
+        df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
+        df = df.drop("user_id", axis="columns")
+        df = df.drop("session_id", axis="columns")
+        return get_model().search(df.to_numpy("float32"), 5)
