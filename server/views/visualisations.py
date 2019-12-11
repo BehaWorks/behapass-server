@@ -25,7 +25,7 @@ def get_user_ids():
 
 
 def get_session_ids(user_id=None):
-    db.get_user_ids()
+    return db.get_session_ids(user_id)
 
 
 def create_plot3d(df):
