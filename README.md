@@ -34,7 +34,10 @@ docker run -p 8000:8000 -v <C:/cesta/k/repozitaru>:/logger --name behapass-serve
 Pri vytváraní konfigurácie v Idei treba dať do _Bind ports_ to čo je v prepínači ```-p``` a do Bind mounts to čo je vo ```-v```. 
 
 ### Parametre docker imageu
-```port``` - port na ktorom má počúvať aplikácia v docker containeri. Default: ```8000```. Tento port treba otvoriť pri spúšťaní kontajneru. Príklad na spustenie na inom porte:
+Premenná prostredia (pri spustení): ```port``` - port na ktorom má počúvať aplikácia v docker containeri. Default: ```8000```. Tento port treba otvoriť pri spúšťaní kontajneru. Príklad na spustenie na inom porte:
 ```
 docker run -p 1234:1234 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server --env "port"="1234" behapass-server
 ```
+
+
+Premenná pri builde: ```copy``` - čo všetko sa má skopírovať do imageu. Pri vývoji odporúčame použiť možnosť ```requirements.txt``` a prepojiť lokálne súbory cez ```-v```. V produkcii netreba zadávať nič a defaultne sa nakopíruje všetko. Iné hodnoty spravia chyby. 

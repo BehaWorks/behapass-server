@@ -1,6 +1,7 @@
 FROM continuumio/miniconda3
 ENV port 8000
-COPY ./requirements.txt /logger/requirements.txt
+ARG copy=.
+COPY ${copy} /logger/
 WORKDIR /logger
 RUN pip install -r requirements.txt
 RUN conda install faiss-cpu -c pytorch
