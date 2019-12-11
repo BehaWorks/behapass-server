@@ -23,7 +23,10 @@ namespace = logger.namespace('logger', description='Logger APIs')
 movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
                                                    'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
-                                                   'controller_id': fields.String(required=True),
+                                                   'controller_id': fields.String(required=True,
+                                                                                  enum=[HEADSET,
+                                                                                        CONTROLLER_1,
+                                                                                        CONTROLLER_2]),
                                                    'x': fields.Float(required=True),
                                                    'y': fields.Float(required=True),
                                                    'z': fields.Float(required=True),
@@ -86,7 +89,7 @@ class LoggerRecord(Resource):
             m = Movement.from_dict(i)
             if m.controller_id == HEADSET:
                 headset_data.append(m)
-            elif m.controller_id == PRIMARY_CONTROLER:
+            elif m.controller_id == CONTROLLER_1:
                 controller_data.append(m)
 
         db.insert_metrix(create_Metrix_Vector(controller_data, headset_data).to_dict())
