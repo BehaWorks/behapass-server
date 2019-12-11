@@ -3,5 +3,6 @@ COPY ./requirements.txt /logger/requirements.txt
 WORKDIR /logger
 RUN pip install -r requirements.txt
 RUN conda install faiss-cpu -c pytorch
-EXPOSE 5000
-CMD python ./logger.py
+RUN pip install gunicorn
+EXPOSE 8000
+CMD gunicorn -w 3 --timeout 300 --reload logger:app
