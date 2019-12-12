@@ -25,13 +25,13 @@ class Mongo():
         self.metrix_collection = self.db["metrix"]
 
     def get_all_movements(self):
-        return self.movement_collection.find()
+        return self.movement_collection.find().sort("timestamp", pymongo.ASCENDING)
 
     def get_all_metrix(self):
         return self.metrix_collection.find()
 
     def get_all_buttons(self):
-        return self.button_collection.find()
+        return self.button_collection.find().sort("timestamp", pymongo.ASCENDING)
 
     def insert_buttons(self, buttons):
         self.button_collection.insert_many(buttons)
@@ -52,4 +52,4 @@ class Mongo():
             return self.movement_collection.distinct("session_id")
 
     def get_movements_by_session_id(self, session_id):
-        return self.movement_collection.find({"session_id": session_id})
+        return self.movement_collection.find({"session_id": session_id}).sort("timestamp", pymongo.ASCENDING)
