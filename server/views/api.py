@@ -4,8 +4,9 @@ import pandas as pd
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
-from server import app, FaissIndexFlatL2
+from server import app
 from server.db import create_db
+from server.lookup.faiss import FaissIndexFlatL2
 from server.metrix import create_Metrix_Vector
 from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
 from utils.json import JSONEncoder
