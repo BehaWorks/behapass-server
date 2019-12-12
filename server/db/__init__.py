@@ -2,9 +2,16 @@ import pymongo
 
 from server import config
 
+instance = None
 
-def create_db():
-    return Mongo()
+
+def create_db(param=None):
+    global instance
+    if param is not None:
+        instance = param
+    if instance is None:
+        instance = Mongo()
+    return instance
 
 
 class Mongo():
@@ -13,36 +20,36 @@ class Mongo():
         super().__init__()
         self.mongo = pymongo.MongoClient(config["DB_HOST"])
         self.db = self.mongo[config["DB_NAME"]]
-        self.test_movement_collection = self.db["movement"]
-        self.test_button_collection = self.db["button"]
-        self.test_metrix_collection = self.db["metrix"]
+        self.movement_collection = self.db["movement"]
+        self.button_collection = self.db["button"]
+        self.metrix_collection = self.db["metrix"]
 
     def get_all_movements(self):
-        return self.test_movement_collection.find()
+        return self.movement_collection.find()
 
     def get_all_metrix(self):
-        return self.test_metrix_collection.find()
+        return self.metrix_collection.find()
 
     def get_all_buttons(self):
-        return self.test_button_collection.find()
+        return self.button_collection.find()
 
     def insert_buttons(self, buttons):
-        self.test_button_collection.insert_many(buttons)
+        self.button_collection.insert_many(buttons)
 
     def insert_movements(self, movements):
-        self.test_movement_collection.insert_many(movements)
+        self.movement_collection.insert_many(movements)
 
     def insert_metrix(self, metrix):
-        self.test_movement_collection.insert_many(metrix)
+        self.movement_collection.insert_many(metrix)
 
     def get_user_ids(self):
-        return self.test_movement_collection.distinct("user_id")
+        return self.movement_collection.distinct("user_id")
 
     def get_session_ids(self, user_id=None):
         if user_id is not None:
-            return self.test_movement_collection.distinct("session_id", {"user_id": user_id})
+            return self.movement_collection.distinct("session_id", {"user_id": user_id})
         else:
-            return self.test_movement_collection.distinct("session_id")
+            return self.movement_collection.distinct("session_id")
 
     def get_movements_by_session_id(self, session_id):
-        return self.test_movement_collection.find({"session_id": session_id})
+        return self.movement_collection.find({"session_id": session_id})

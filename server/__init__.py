@@ -4,8 +4,6 @@ app = Flask(__name__)
 app.config.from_pyfile('config/config.py')
 config = app.config
 
-from server.lookup.faiss import FaissIndexFlatL2
-
 from server.views import api
 from server.views import visualisations
 from server.db import create_db
