@@ -7,7 +7,7 @@ from flask_restplus import Resource, Api, fields
 from server import app
 from server.db import create_db
 from server.lookup.faiss import FaissIndexFlatL2
-from server.metrix import create_Metrix_Vector
+from server.metrix import create_metrix_vector
 from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
 from utils.json import JSONEncoder
 
@@ -83,17 +83,7 @@ class LoggerRecord(Resource):
     def post(self):
         db.insert_movements(request.json["movements"])
         db.insert_buttons(request.json["buttons"])
-
-        controller_data: List[Movement] = []
-        headset_data = []
-        for i in request.json["movements"]:
-            m = Movement.from_dict(i)
-            if m.controller_id == HEADSET:
-                headset_data.append(m)
-            elif m.controller_id == CONTROLLER_1:
-                controller_data.append(m)
-
-        db.insert_metrix(create_Metrix_Vector(controller_data, headset_data).to_dict())
+        db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"])))
         return {
             "status": "OK"
         }
@@ -121,16 +111,20 @@ class Lookup(Resource):
     @logger.expect(logger_record)
     @logger.marshal_with(lookup_result)
     def post(self):
-        controller_data: List[Movement] = []
-        headset_data = []
-        for i in request.json["movements"]:
-            m = Movement.from_dict(i)
-            if m.controller_id == HEADSET:
-                headset_data.append(m)
-            elif m.controller_id == CONTROLLER_1:
-                controller_data.append(m)
-        vector = create_Metrix_Vector(controller_data, headset_data)
+        vector = create_metrix_vector(*split_movements(request.json["movements"]))
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
         return get_model().search(df.to_numpy("float32"), 5)
+
+
+def split_movements(collection):
+    controller_data: List[Movement] = []
+    headset_data = []
+    for i in collection:
+        m = Movement.from_dict(i)
+        if m.controller_id == HEADSET:
+            headset_data.append(m)
+        elif m.controller_id == CONTROLLER_1:
+            controller_data.append(m)
+    return controller_data, headset_data
