@@ -36,3 +36,28 @@ class FaissIndexFlatL2():
             if i > -1:
                 results.append({"user_id": self.user_ids[i], "distance": float(d)})
         return results
+
+    def process_results(self, results):
+        counts = {}
+        for result in results:
+            if result["user_id"] not in counts:
+                counts[result["user_id"]] = 0
+            counts[result["user_id"]] += 1
+        if len(counts) == 1:
+            return results[0]["user_id"]
+        counts = list(counts.items())
+        counts.sort(key=lambda tup: tup[1], reverse=True)
+        if counts[0][1] > counts[1][1]:
+            return counts[0][0]
+        previous = counts[0][1]
+        finalists = {}
+        for current in counts:
+            if current[1] < previous:
+                break
+            finalists[current[0]] = 0
+        for result in results:
+            if result["user_id"] in finalists:
+                finalists[result["user_id"]] += result["distance"]
+        distances = list(finalists.items())
+        distances.sort(key=lambda tup: tup[1])
+        return distances[0][0]
