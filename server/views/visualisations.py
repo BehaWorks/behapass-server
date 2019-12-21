@@ -2,6 +2,8 @@ import pandas as pd
 import plotly.graph_objs as go
 import plotly.offline as po
 from flask import Blueprint, render_template, request
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 from server.db import create_db
 from server.metrix.acceleration import Acceleration
@@ -26,6 +28,23 @@ def get_user_ids():
 
 def get_session_ids(user_id=None):
     return db.get_session_ids(user_id)
+
+
+def get_all_metrix():
+    return db.get_all_metrix()
+
+
+def pca(data):
+    data = data.dropna()
+    data.pop('_id')
+    data.pop('session_id')
+    user_ids = data.pop('user_id')
+    sklearn_pca = PCA(n_components=2)
+    reduced = pd.DataFrame(sklearn_pca.fit_transform(StandardScaler().fit_transform(data)))
+    user_ids = pd.Series(list(user_ids), name='user_id')
+    reduced = reduced.join(user_ids)
+
+    return reduced
 
 
 def create_plot3d(df):
@@ -81,6 +100,35 @@ def create_scatter3d(df):
                         mode="lines", line=dict(width=2, color="blue"), opacity=1)
 
 
+def create_pca_plot(data, title):
+    traces = []
+
+    for name in data["user_id"].unique():
+        trace = dict(
+            type='scatter',
+            x=(data[data["user_id"] == name])[0],
+            y=(data[data["user_id"] == name])[1],
+            mode='markers',
+            name=name,
+            marker=dict(
+                size=12,
+                line=dict(
+                    color='rgba(217, 217, 217, 0.14)',
+                    width=0.5),
+                opacity=0.8)
+        )
+        traces.append(trace)
+
+    layout = dict(
+        xaxis=dict(title='PC1', showline=False),
+        yaxis=dict(title='PC2', showline=False),
+        title=dict(text=title)
+    )
+    fig = dict(data=traces, layout=layout)
+
+    return po.plot(fig, output_type='div')
+
+
 @blueprint.route('/')
 def root():
     return render_template('users_form.html', user_ids=get_user_ids())
@@ -134,6 +182,16 @@ def metrix():
             graphs.append(create_metric_boxplot(values[key], type(instance).__name__ + " " + key))
 
     return render_template('metrix.html', graphs=graphs)
+
+
+@blueprint.route('/dim_reduction')
+def dim_reduction():
+    graphs = []
+    metrix_df = pd.DataFrame(list(get_all_metrix()))
+
+    graphs.append(create_pca_plot(pca(metrix_df), "PCA dimensionality reduction on metrix vectors"))
+
+    return render_template('metrix.html', graphs=graphs, title="BehaPass - Metrix dimensionality reduction")
 
 
 def compute_metric(instance: Metric):
