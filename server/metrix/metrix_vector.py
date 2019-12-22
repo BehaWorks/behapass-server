@@ -1,8 +1,9 @@
+from server import config
 from server.metrix.result import Result
 
 
 class MetrixVector:
-    CHUNKS = 3
+    CHUNKS = config["METRIX_CHUNKS"]
     VECTOR_LENGTH = 29 * CHUNKS + 2
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,

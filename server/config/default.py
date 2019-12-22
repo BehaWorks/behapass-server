@@ -1,4 +1,8 @@
-DB_HOST = "mongodb://localhost:27017/"
-DB_NAME = "behaworks_logger"
+import os
+
+DB_HOST = "mongodb://" + os.environ["db_host"] + ":" + os.environ["db_port"] + "/"
+DB_NAME = "behaworks_logger_v7"
 DB_PORT = ""
-URL_PREFIX = ""
+URL_PREFIX = "/api"
+METRIX_CHUNKS = os.environ["metrix_chunks"]
+NEIGHBOURS = os.environ["neighbours"]

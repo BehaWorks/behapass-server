@@ -115,7 +115,7 @@ class Lookup(Resource):
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
-        return get_model().search(df.to_numpy("float32"), 5)
+        return get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
 
 
 def split_movements(collection):
