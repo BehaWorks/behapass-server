@@ -22,6 +22,8 @@ jobs:
           ${{ runner.os }}-pip-
     - uses: whoan/docker-build-with-cache-action@v2
       with:
+        username: behaworks
+        password: not-really-a-password
         image_name: behaworks/behapass
         push_image_and_stages: false
     - name: Install dependencies
