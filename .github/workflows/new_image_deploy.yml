@@ -2,7 +2,7 @@ name: Deploy after updating Dockerfile
 
 on:
   push:
-    branches-ignore:
+    branches:
       - "master"
     paths:
       - "Dockerfile"
