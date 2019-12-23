@@ -3,6 +3,7 @@ import plotly.graph_objs as go
 import plotly.offline as po
 from flask import Blueprint, render_template, request
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
 from server.db import create_db
@@ -34,13 +35,14 @@ def get_all_metrix():
     return db.get_all_metrix()
 
 
-def pca(data):
+def reduce_dimensionality(data, reducer, normalize=True):
     data = data.dropna()
     data.pop('_id')
     data.pop('session_id')
     user_ids = data.pop('user_id')
-    sklearn_pca = PCA(n_components=2)
-    reduced = pd.DataFrame(sklearn_pca.fit_transform(StandardScaler().fit_transform(data)))
+    if normalize:
+        data = StandardScaler().fit_transform(data)
+    reduced = pd.DataFrame(reducer.fit_transform(data))
     user_ids = pd.Series(list(user_ids), name='user_id')
     reduced = reduced.join(user_ids)
 
@@ -100,14 +102,14 @@ def create_scatter3d(df):
                         mode="lines", line=dict(width=2, color="blue"), opacity=1)
 
 
-def create_pca_plot(data, title):
+def create_scatterplot(data, title, classes_col="user_id", x_index=0, y_index=1, x_label='X', y_label='Y'):
     traces = []
 
-    for name in data["user_id"].unique():
+    for name in data[classes_col].unique():
         trace = dict(
             type='scatter',
-            x=(data[data["user_id"] == name])[0],
-            y=(data[data["user_id"] == name])[1],
+            x=(data[data[classes_col] == name])[x_index],
+            y=(data[data[classes_col] == name])[y_index],
             mode='markers',
             name=name,
             marker=dict(
@@ -120,8 +122,8 @@ def create_pca_plot(data, title):
         traces.append(trace)
 
     layout = dict(
-        xaxis=dict(title='PC1', showline=False),
-        yaxis=dict(title='PC2', showline=False),
+        xaxis=dict(title=x_label, showline=False),
+        yaxis=dict(title=y_label, showline=False),
         title=dict(text=title)
     )
     fig = dict(data=traces, layout=layout)
@@ -189,7 +191,11 @@ def dim_reduction():
     graphs = []
     metrix_df = pd.DataFrame(list(get_all_metrix()))
 
-    graphs.append(create_pca_plot(pca(metrix_df), "PCA dimensionality reduction on metrix vectors"))
+    graphs.append(create_scatterplot(reduce_dimensionality(metrix_df, reducer=PCA(n_components=2)),
+                                     "PCA dimensionality reduction on metrix vectors", x_label='PC1', y_label='PC2'))
+    graphs.append(create_scatterplot(reduce_dimensionality(metrix_df, reducer=TSNE()),
+                                     "t-SNE dimensionality reduction on metrix vectors", x_label='Component 1',
+                                     y_label='Component 2'))
 
     return render_template('metrix.html', graphs=graphs, title="BehaPass - Metrix dimensionality reduction")
 
