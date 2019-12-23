@@ -1,4 +1,4 @@
-name: Logger deploy build
+name: Deploy
 
 on: 
   push:
@@ -19,14 +19,6 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-#    - name: Set up Python 3.7
-#      uses: actions/setup-python@v1
-#      with:
-#        python-version: 3.7
-#    - name: Install dependencies
-#      run: |
-#        python -m pip install --upgrade pip
-#        pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -37,7 +29,7 @@ jobs:
     - name: Test
       run: |
         python -m unittest discover tests/
-    - name: deploy to server
+    - name: Deploy to server
       uses: AEnterprise/rsync-deploy@v1.0
       env:
         DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
