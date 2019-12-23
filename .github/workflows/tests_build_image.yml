@@ -21,8 +21,8 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Build Docker image
         run: |
-          docker build -t behapass-server .
-          docker run -t -d --name behapass-server behapass-server sh
+          docker build --build-arg copy=requirements.txt -t behapass-server-dev .
+          docker run -v ${pwd}:/logger --name behapass-server behapass-server-dev
       - name: Install dependencies
         run: |
           docker exec behapass-server pip install -r requirements.txt
