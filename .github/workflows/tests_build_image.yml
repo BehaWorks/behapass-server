@@ -22,7 +22,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t behapass-server .
-          docker run --name behapass-server behapass-server
+          docker run --name behapass-server behapass-server python -V
       - name: Install dependencies
         run: |
           docker exec behapass-server pip install -r requirements.txt
