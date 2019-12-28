@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 
 config = {
     "DB_HOST": "mongodb://127.0.0.1:27017/",
-    "DB_NAME": "behaworks_logger_v7",
-    "DB_NAME_OTHER": "behaworks_logger_v7_split"
+    "DB_NAME": "behaworks_logger_v8",
+    "DB_NAME_OTHER": "behaworks_logger_v8"
 }
 
 mongo = pymongo.MongoClient(config["DB_HOST"])

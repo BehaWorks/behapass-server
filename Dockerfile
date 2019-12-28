@@ -2,6 +2,8 @@ FROM continuumio/miniconda3
 ENV port 8000
 ENV db_host 172.17.0.1
 ENV db_port 27017
+ENV metrix_chunks 3
+ENV neighbours 3
 ARG copy=.
 COPY ${copy} /logger/
 WORKDIR /logger
