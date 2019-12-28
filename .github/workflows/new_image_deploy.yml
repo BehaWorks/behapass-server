@@ -1,9 +1,11 @@
-name: Build image and run tests
+name: Deploy after updating Dockerfile
 
 on:
   push:
-    branches-ignore:
+    branches:
       - "master"
+    paths:
+      - "Dockerfile"
 
 jobs:
   build:
@@ -34,3 +36,13 @@ jobs:
       - name: Test
         run: |
           docker exec behapass-server python -m unittest discover tests/
+      - name: Deploy to server
+        uses: AEnterprise/rsync-deploy@v1.0
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
+          ARGS: "-a -e -v --exclude=/**/__pycache__"
+          SERVER_PORT: 22
+          FOLDER: "*"
+          SERVER_IP: team12-19.studenti.fiit.stuba.sk
+          USERNAME: bitbucket
+          SERVER_DESTINATION: /var/www/python/logger
