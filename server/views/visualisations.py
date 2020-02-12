@@ -12,7 +12,7 @@ from server.metrix.jerk import Jerk
 from server.metrix.metric import Metric
 from server.metrix.result import Result
 from server.metrix.velocity import Velocity
-from server.models.movement import Movement
+from server.models.movement import Movement, CONTROLLER_1, HEADSET
 
 Z_GRAPH_RANGE = [-2, 2]
 X_GRAPH_RANGE = [-2, 2]
@@ -29,6 +29,10 @@ def get_user_ids():
 
 def get_session_ids(user_id=None):
     return db.get_session_ids(user_id)
+
+
+def get_controller_ids_by_session_id(session_id=None):
+    return db.get_controller_ids_by_session_id(session_id)
 
 
 def get_all_metrix():
@@ -49,15 +53,14 @@ def reduce_dimensionality(data, reducer, normalize=True):
     return reduced
 
 
-def create_plot3d(df):
+def create_plot3d(df, df2):
     max_height = max(df['y'])
-    splot_anim = [create_scatter3d(df), create_scatter3d(df)]
+    splot_anim = [create_scatter3d(df), create_scatter3d(df2), create_scatter3d(df)]
     frames = [go.Frame(
         data=go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
                           mode="lines", line=dict(width=8, color="red"), opacity=1
                           )
     ) for k in range(len(df['timestamp']))]
-
     layout_anim = go.Layout(
         width=1024,
         height=1024,
@@ -151,12 +154,17 @@ def user_sessions():
         pass
 
     if session_id is not None:
-        df = pd.DataFrame(list(db.get_movements_by_session_id(session_id=session_id)))
+        df = pd.DataFrame(list(
+            db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=CONTROLLER_1))
+        )
+        df2 = pd.DataFrame(list(
+            db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=HEADSET))
+        )
         data = []
         for i in df.to_dict('records'):
             data.append(Movement.from_dict(i))
         return render_template('graph.html',
-                               graph3d_div=create_plot3d(df),
+                               graph3d_div=create_plot3d(df, df2),
                                velocity_div=create_metric_plot(Velocity().calculate(data), "Velocity"),
                                acceleration_div=create_metric_plot(Acceleration().calculate(data), "Acceleration"),
                                session_id=session_id,

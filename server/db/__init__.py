@@ -53,3 +53,6 @@ class Mongo():
 
     def get_movements_by_session_id(self, session_id):
         return self.movement_collection.find({"session_id": session_id}).sort("timestamp", pymongo.ASCENDING)
+
+    def get_movements_by_session_id_and_controler_id(self, session_id, controller_id):
+        return self.movement_collection.find({"session_id": session_id, "controller_id": controller_id}).sort("timestamp", pymongo.ASCENDING)
