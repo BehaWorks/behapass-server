@@ -31,10 +31,6 @@ def get_session_ids(user_id=None):
     return db.get_session_ids(user_id)
 
 
-def get_controller_ids_by_session_id(session_id=None):
-    return db.get_controller_ids_by_session_id(session_id)
-
-
 def get_all_metrix():
     return db.get_all_metrix()
 
