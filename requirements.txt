@@ -9,3 +9,4 @@ plotly>=4.4.1
 pymongo>=3.10.0
 scikit-learn
 vg>=1.6.1
+Werkzeug==0.16.1

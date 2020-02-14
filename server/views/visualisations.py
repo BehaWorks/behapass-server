@@ -53,10 +53,12 @@ def create_plot3d(df, df2):
     max_height = max(df['y'])
     splot_anim = [create_scatter3d(df), create_scatter3d(df2), create_scatter3d(df)]
     frames = [go.Frame(
-        data=go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
-                          mode="lines", line=dict(width=8, color="red"), opacity=1
-                          )
-    ) for k in range(len(df['timestamp']))]
+        data=[go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
+                           mode="lines", line=dict(width=8, color="red"), opacity=1
+                           ),
+              go.Scatter3d(x=df2['x'][:k], y=df2['y'][:k], z=df2['z'][:k],
+                           mode="lines", line=dict(width=8, color="red"), opacity=1
+                           )]) for k in range(len(df['timestamp']))]
     layout_anim = go.Layout(
         width=1024,
         height=1024,
