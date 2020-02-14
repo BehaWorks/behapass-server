@@ -51,14 +51,14 @@ def reduce_dimensionality(data, reducer, normalize=True):
 
 def create_plot3d(df, df2):
     max_height = max(df['y'])
-    splot_anim = [create_scatter3d(df), create_scatter3d(df2), create_scatter3d(df)]
+    splot_anim = [create_scatter3d(df), create_scatter3d(df2), create_scatter3d(df2), create_scatter3d(df)]
     frames = [go.Frame(
         data=[go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
-                           mode="lines", line=dict(width=8, color="red"), opacity=1
+                           mode="lines", line=dict(width=8, color="red"), opacity=1, name="Headset", showlegend=True
                            ),
               go.Scatter3d(x=df2['x'][:k], y=df2['y'][:k], z=df2['z'][:k],
-                           mode="lines", line=dict(width=8, color="red"), opacity=1
-                           )]) for k in range(len(df['timestamp']))]
+                           mode="lines", line=dict(width=8, color="green"), opacity=1, name="Controller", showlegend=True
+                           )]) for k in range(len(df['timestamp'])+1)]
     layout_anim = go.Layout(
         width=1024,
         height=1024,
@@ -100,7 +100,7 @@ def create_metric_boxplot(data, title):
 
 def create_scatter3d(df):
     return go.Scatter3d(x=df['x'], y=df['y'], z=df['z'],
-                        mode="lines", line=dict(width=2, color="blue"), opacity=1)
+                        mode="lines", line=dict(width=2, color="blue"), opacity=1, showlegend=False)
 
 
 def create_scatterplot(data, title, classes_col="user_id", x_index=0, y_index=1, x_label='X', y_label='Y'):
@@ -152,17 +152,17 @@ def user_sessions():
         pass
 
     if session_id is not None:
-        df = pd.DataFrame(list(
+        df_primary_controller = pd.DataFrame(list(
             db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=CONTROLLER_1))
         )
-        df2 = pd.DataFrame(list(
+        df_headset = pd.DataFrame(list(
             db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=HEADSET))
         )
         data = []
-        for i in df.to_dict('records'):
+        for i in df_primary_controller.to_dict('records'):
             data.append(Movement.from_dict(i))
         return render_template('graph.html',
-                               graph3d_div=create_plot3d(df, df2),
+                               graph3d_div=create_plot3d(df_primary_controller, df_headset),
                                velocity_div=create_metric_plot(Velocity().calculate(data), "Velocity"),
                                acceleration_div=create_metric_plot(Acceleration().calculate(data), "Acceleration"),
                                session_id=session_id,
