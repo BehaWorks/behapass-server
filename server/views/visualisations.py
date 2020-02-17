@@ -12,7 +12,7 @@ from server.metrix.jerk import Jerk
 from server.metrix.metric import Metric
 from server.metrix.result import Result
 from server.metrix.velocity import Velocity
-from server.models.movement import Movement
+from server.models.movement import Movement, CONTROLLER_1, HEADSET
 
 Z_GRAPH_RANGE = [-2, 2]
 X_GRAPH_RANGE = [-2, 2]
@@ -49,15 +49,17 @@ def reduce_dimensionality(data, reducer, normalize=True):
     return reduced
 
 
-def create_plot3d(df):
-    max_height = max(df['y'])
-    splot_anim = [create_scatter3d(df), create_scatter3d(df)]
+def create_plot3d(df_controller, df_headset):
+    max_height = max(df_controller['y'])
+    splot_anim = [create_scatter3d(df_controller), create_scatter3d(df_headset), create_scatter3d(df_headset),
+                  create_scatter3d(df_controller)]
     frames = [go.Frame(
-        data=go.Scatter3d(x=df['x'][:k], y=df['y'][:k], z=df['z'][:k],
-                          mode="lines", line=dict(width=8, color="red"), opacity=1
-                          )
-    ) for k in range(len(df['timestamp']))]
-
+        data=[go.Scatter3d(x=df_controller['x'][:k], y=df_controller['y'][:k], z=df_controller['z'][:k],
+                           mode="lines", line=dict(width=8, color="red"), opacity=1, name="Controller", showlegend=True
+                           ),
+              go.Scatter3d(x=df_headset['x'][:k], y=df_headset['y'][:k], z=df_headset['z'][:k],
+                           mode="lines", line=dict(width=8, color="green"), opacity=1, name="Headset", showlegend=True
+                           )]) for k in range(len(df_controller['timestamp']) + 1)]
     layout_anim = go.Layout(
         width=1024,
         height=1024,
@@ -70,7 +72,7 @@ def create_plot3d(df):
     )
 
     fig_anim = go.Figure(data=splot_anim, layout=layout_anim, frames=frames)
-    frame_duration = df['timestamp'].tolist()[-1] / len(df['timestamp'])
+    frame_duration = df_controller['timestamp'].tolist()[-1] / len(df_controller['timestamp'])
     output = po.plot(fig_anim, output_type='div', animation_opts=dict(frame=dict(duration=frame_duration)))
     return output
 
@@ -99,7 +101,7 @@ def create_metric_boxplot(data, title):
 
 def create_scatter3d(df):
     return go.Scatter3d(x=df['x'], y=df['y'], z=df['z'],
-                        mode="lines", line=dict(width=2, color="blue"), opacity=1)
+                        mode="lines", line=dict(width=2, color="blue"), opacity=1, showlegend=False)
 
 
 def create_scatterplot(data, title, classes_col="user_id", x_index=0, y_index=1, x_label='X', y_label='Y'):
@@ -151,12 +153,17 @@ def user_sessions():
         pass
 
     if session_id is not None:
-        df = pd.DataFrame(list(db.get_movements_by_session_id(session_id=session_id)))
+        df_primary_controller = pd.DataFrame(list(
+            db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=CONTROLLER_1))
+        )
+        df_headset = pd.DataFrame(list(
+            db.get_movements_by_session_id_and_controler_id(session_id=session_id, controller_id=HEADSET))
+        )
         data = []
-        for i in df.to_dict('records'):
+        for i in df_primary_controller.to_dict('records'):
             data.append(Movement.from_dict(i))
         return render_template('graph.html',
-                               graph3d_div=create_plot3d(df),
+                               graph3d_div=create_plot3d(df_primary_controller, df_headset),
                                velocity_div=create_metric_plot(Velocity().calculate(data), "Velocity"),
                                acceleration_div=create_metric_plot(Acceleration().calculate(data), "Acceleration"),
                                session_id=session_id,
