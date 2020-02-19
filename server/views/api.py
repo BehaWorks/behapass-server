@@ -9,7 +9,7 @@ from server.db import create_db
 from server.lookup.faiss import FaissIndexFlatL2
 from server.metrix import create_metrix_vector
 from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
-from utils.json import JSONEncoder
+from utils.json_encoder import JSONEncoder
 
 config = app.config
 

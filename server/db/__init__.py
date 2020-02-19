@@ -30,6 +30,9 @@ class Mongo():
     def get_all_metrix(self):
         return self.metrix_collection.find()
 
+    def get_all_metrix_by_user_id(self, user_id):
+        return self.metrix_collection.find({"user_id": user_id})
+
     def get_all_buttons(self):
         return self.button_collection.find().sort("timestamp", pymongo.ASCENDING)
 
@@ -44,6 +47,9 @@ class Mongo():
 
     def get_user_ids(self):
         return self.movement_collection.distinct("user_id")
+
+    def remove_metrix_by_session_ids(self, session_ids):
+        self.metrix_collection.delete_many({"session_id": {"$in": session_ids}})
 
     def get_session_ids(self, user_id=None):
         if user_id is not None:
