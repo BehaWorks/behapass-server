@@ -1,14 +1,14 @@
+from datetime import datetime
 from typing import List
 
-import pandas as pd
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields
 
 from server import app
-from server.db import create_db
-from server.lookup.faiss import FaissIndexFlatL2
+from server.lookup.faiss import *
 from server.metrix import create_metrix_vector
 from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
+from server.models.user import User
 from utils.json_encoder import JSONEncoder
 
 config = app.config
@@ -50,11 +50,13 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
                                                'menu_button': fields.Boolean(),
                                                'trackpad_pressed': fields.Boolean(),
                                                'trackpad_touched': fields.Boolean(),
-                                               'grip_button': fields.Boolean,
+                                               'grip_button': fields.Boolean(),
                                                })
 
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
+
+user_record = logger.model('User record', {"data": fields.String()})
 
 lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
                                                "distance": fields.Float(required=True)})
@@ -87,6 +89,21 @@ class LoggerRecord(Resource):
         return {
             "status": "OK"
         }
+
+
+@namespace.route("/user")
+class UserRecord(Resource):
+
+    @logger.expect(user_record)
+    def post(self):
+        user = request.json
+        user["registration_started"] = datetime.utcnow().timestamp()
+        user["registration_finished"] = None
+        user = User.from_dict(user)
+        data = user.__dict__
+        if data["_id"] is None:
+            del (data["_id"])
+        return {"id": str(db.insert_user(data))}
 
 
 @namespace.route("/movements")

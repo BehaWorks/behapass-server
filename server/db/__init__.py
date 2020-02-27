@@ -1,6 +1,7 @@
 import pymongo
 
 from server import config
+from server.models.user import User
 
 instance = None
 
@@ -20,6 +21,7 @@ class Mongo():
         super().__init__()
         self.mongo = pymongo.MongoClient(config["DB_HOST"])
         self.db = self.mongo[config["DB_NAME"]]
+        self.user_collection = self.db["user"]
         self.movement_collection = self.db["movement"]
         self.button_collection = self.db["button"]
         self.metrix_collection = self.db["metrix"]
@@ -43,7 +45,7 @@ class Mongo():
         self.movement_collection.insert_many(movements)
 
     def insert_metrix(self, metrix):
-        self.movement_collection.insert_many(metrix)
+        self.metrix_collection.insert_many(metrix)
 
     def get_user_ids(self):
         return self.movement_collection.distinct("user_id")
@@ -61,4 +63,8 @@ class Mongo():
         return self.movement_collection.find({"session_id": session_id}).sort("timestamp", pymongo.ASCENDING)
 
     def get_movements_by_session_id_and_controler_id(self, session_id, controller_id):
-        return self.movement_collection.find({"session_id": session_id, "controller_id": controller_id}).sort("timestamp", pymongo.ASCENDING)
+        return self.movement_collection.find({"session_id": session_id, "controller_id": controller_id}).sort(
+            "timestamp", pymongo.ASCENDING)
+
+    def insert_user(self, user: User):
+        return self.user_collection.insert_one(user).inserted_id
