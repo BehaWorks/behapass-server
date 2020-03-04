@@ -1,41 +1,41 @@
-name: Deploy
+# name: Deploy
 
-on: 
-  push:
-    branches: 
-      - "master"
+# on: 
+#   push:
+#     branches: 
+#       - "master"
 
-jobs:
-  deploy:
+# jobs:
+#   deploy:
 
-    runs-on: ubuntu-latest
-    container:
-      image: behaworks/behapass-server
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/cache@v1
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test
-      run: |
-        python -m unittest discover tests/
-    - name: Deploy to server
-      uses: AEnterprise/rsync-deploy@v1.0
-      env:
-        DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
-        ARGS: "-a -e -v --exclude=/**/__pycache__"
-        SERVER_PORT: 22
-        FOLDER: "*"
-        SERVER_IP: team12-19.studenti.fiit.stuba.sk
-        USERNAME: bitbucket
-        SERVER_DESTINATION: /var/www/python/logger
+#     runs-on: ubuntu-latest
+#     container:
+#       image: behaworks/behapass-server
+#     steps:
+#     - uses: actions/checkout@v1
+#     - uses: actions/cache@v1
+#       with:
+#         path: ~/.cache/pip
+#         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+#         restore-keys: |
+#           ${{ runner.os }}-pip-
+#     - name: Lint with flake8
+#       run: |
+#         pip install flake8
+#         # stop the build if there are Python syntax errors or undefined names
+#         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#     - name: Test
+#       run: |
+#         python -m unittest discover tests/
+#     - name: Deploy to server
+#       uses: AEnterprise/rsync-deploy@v1.0
+#       env:
+#         DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
+#         ARGS: "-a -e -v --exclude=/**/__pycache__"
+#         SERVER_PORT: 22
+#         FOLDER: "*"
+#         SERVER_IP: team12-19.studenti.fiit.stuba.sk
+#         USERNAME: bitbucket
+#         SERVER_DESTINATION: /var/www/python/logger
