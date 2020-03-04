@@ -25,7 +25,7 @@ class Metric:
 
     @staticmethod
     def extract_euler_angles(movements):
-        angles = [np.array([movement.yaw, movement.pitch, movement.roll]) for movement in movements]
+        angles = [np.array([movement.yaw, movement.pitch, movement.roll]) * np.pi / 180. for movement in movements]
         return angles
 
     @staticmethod
@@ -57,6 +57,7 @@ class Metric:
             return []
         for next_quaternion in quaternions:
             quaternions_distance.append(Quaternion.distance(actual_quaternion, next_quaternion))
+            actual_quaternion = next_quaternion
         return quaternions_distance
 
     @staticmethod
