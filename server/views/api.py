@@ -6,6 +6,7 @@ from flask_restplus import Resource, Api, fields
 
 from server import app
 from server.lookup.faiss import *
+from server.lookup.preprocessing import remove_outliers
 from server.metrix import create_metrix_vector
 from server.models.movement import Movement, HEADSET, CONTROLLER_1, CONTROLLER_2
 from server.models.user import User
@@ -63,6 +64,7 @@ lookup_result = logger.model('Lookup result', {"user_id": fields.String(required
 
 model = None
 
+queued_movements = {}
 
 def get_model():
     global model
@@ -103,7 +105,34 @@ class UserRecord(Resource):
         data = user.__dict__
         if data["_id"] is None:
             del (data["_id"])
-        return {"id": str(db.insert_user(data))}
+        id = str(db.insert_user(data))
+        queued_movements[id] = []
+        return {"id": id}
+
+
+@namespace.route('/user/<user_id>/movements', methods=['POST'])
+class RegisterUser(Resource):
+    @logger.expect(movement_record)
+    def post(self, user_id):
+        try:
+            queued_movements[user_id].append(request.json)
+        except KeyError:
+            return namespace.abort(404, 'Unknown user. First create user using /user to get user_id')
+
+        from server.config.config import MINIMUM_RECORDS
+        if len(queued_movements[user_id]) < MINIMUM_RECORDS:
+            return {"message": "Send more movements for succesfull registration",
+                    "remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, 202
+
+        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)), queued_movements[user_id])
+        df = remove_outliers(metrix)
+        if len(df) < MINIMUM_RECORDS:
+            return {"message": "Send more movements for succesfull registration",
+                    "remaining": MINIMUM_RECORDS - len(df)}, 202
+
+        db.insert_metrix(df)
+        del (queued_movements[user_id])
+        return {"message": "OK"}
 
 
 @namespace.route("/movements")
