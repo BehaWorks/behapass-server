@@ -1,5 +1,6 @@
 import numpy as np
 import vg
+from pyquaternion import Quaternion
 
 from server.metrix.result import Result
 
@@ -21,6 +22,43 @@ class Metric:
         points = [np.array([movement.x, movement.y, movement.z]) for movement in movements]
         timestamps = [np.array(movement.timestamp) for movement in movements]
         return points, timestamps
+
+    @staticmethod
+    def extract_euler_angles(movements):
+        angles = [np.array([movement.yaw, movement.pitch, movement.roll]) * np.pi / 180. for movement in movements]
+        return angles
+
+    @staticmethod
+    def to_quaternion(angle):  # yaw (Z), pitch (Y), roll (X)
+        cy = np.cos(angle[0] * 0.5)
+        sy = np.sin(angle[0] * 0.5)
+        cp = np.cos(angle[1] * 0.5)
+        sp = np.sin(angle[1] * 0.5)
+        cr = np.cos(angle[2] * 0.5)
+        sr = np.sin(angle[2] * 0.5)
+
+        this_quaternion = Quaternion(w=cy * cp * cr + sy * sp * sr,
+                                     x=cy * cp * sr - sy * sp * cr,
+                                     y=sy * cp * sr + cy * sp * cr,
+                                     z=sy * cp * cr - cy * sp * sr)
+        return this_quaternion
+
+    @staticmethod
+    def euler_angles_to_quaternions(euler_angles):
+        quaternions = [Metric.to_quaternion(euler_angle) for euler_angle in euler_angles]
+        return quaternions
+
+    @staticmethod
+    def calculate_quaternions_distances(quaternions):
+        quaternions_distance = []
+        try:
+            actual_quaternion = quaternions.pop(0)
+        except IndexError:
+            return []
+        for next_quaternion in quaternions:
+            quaternions_distance.append(Quaternion.distance(actual_quaternion, next_quaternion))
+            actual_quaternion = next_quaternion
+        return quaternions_distance
 
     @staticmethod
     def derivative_wrt_time(function, values, timestamps):

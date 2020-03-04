@@ -6,10 +6,10 @@ DB_PORT = ""
 URL_PREFIX = "/api"
 try:
     METRIX_CHUNKS = int(os.environ["metrix_chunks"])
-except ValueError:
+except (ValueError, KeyError):
     METRIX_CHUNKS = 3
 
 try:
     NEIGHBOURS = int(os.environ["neighbours"])
-except ValueError:
+except (ValueError, KeyError):
     NEIGHBOURS = 3
