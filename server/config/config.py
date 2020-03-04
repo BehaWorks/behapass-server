@@ -5,6 +5,7 @@ DB_NAME = "behaworks_behapass_v9"
 DB_PORT = ""
 URL_PREFIX = "/api"
 MINIMUM_RECORDS = 10
+MAXIMAL_DISTANCE = 20
 try:
     METRIX_CHUNKS = int(os.environ["metrix_chunks"])
 except (ValueError, KeyError):
@@ -13,4 +14,4 @@ except (ValueError, KeyError):
 try:
     NEIGHBOURS = int(os.environ["neighbours"])
 except (ValueError, KeyError):
-    NEIGHBOURS = 1
+    NEIGHBOURS = 3

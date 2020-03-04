@@ -1,11 +1,9 @@
-name: Deploy after updating Dockerfile
+name: Build image and deploy
 
 on:
   push:
     branches:
       - "master"
-    paths:
-      - "Dockerfile"
 
 jobs:
   build:

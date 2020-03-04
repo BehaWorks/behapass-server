@@ -7,7 +7,7 @@ class MetrixVector:
     VECTOR_LENGTH = 29 * CHUNKS + 2
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                 device_distance: Result, session_id, user_id) -> None:
+                 device_distance: Result, controller_rotation_distance: Result, session_id, user_id) -> None:
         self.data = {
             "user_id": user_id,
             "session_id": session_id,
@@ -40,12 +40,19 @@ class MetrixVector:
             "device_distance_minimum": device_distance.minimum,
             "device_distance_maximum": device_distance.maximum,
             "device_distance_std_dev": device_distance.std_dev,
-            "device_distance_iqr": device_distance.interquartile_range
+            "device_distance_iqr": device_distance.interquartile_range,
+            "controller_rotation_distance_average": controller_rotation_distance.average,
+            "controller_rotation_distance_median": controller_rotation_distance.median,
+            "controller_rotation_distance_minimum": controller_rotation_distance.minimum,
+            "controller_rotation_distance_maximum": controller_rotation_distance.maximum,
+            "controller_rotation_distance_std_dev": controller_rotation_distance.std_dev,
+            "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range
         }
-        self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance)
+        self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
+                                controller_rotation_distance)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                           device_distance: Result):
+                           device_distance: Result, controller_rotation_distance: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
@@ -78,7 +85,19 @@ class MetrixVector:
                 "device_distance_minimum_" + str(i): device_distance.minimum_chunk(self.CHUNKS, i),
                 "device_distance_maximum_" + str(i): device_distance.maximum_chunk(self.CHUNKS, i),
                 "device_distance_std_dev_" + str(i): device_distance.std_dev_chunk(self.CHUNKS, i),
-                "device_distance_iqr_" + str(i): device_distance.interquartile_range_chunk(self.CHUNKS, i)
+                "device_distance_iqr_" + str(i): device_distance.interquartile_range_chunk(self.CHUNKS, i),
+                "controller_rotation_distance_average_" + str(i): controller_rotation_distance.average_chunk(
+                    self.CHUNKS, i),
+                "controller_rotation_distance_median_" + str(i): controller_rotation_distance.median_chunk(self.CHUNKS,
+                                                                                                           i),
+                "controller_rotation_distance_minimum_" + str(i): controller_rotation_distance.minimum_chunk(
+                    self.CHUNKS, i),
+                "controller_rotation_distance_maximum_" + str(i): controller_rotation_distance.maximum_chunk(
+                    self.CHUNKS, i),
+                "controller_rotation_distance_std_dev_" + str(i): controller_rotation_distance.std_dev_chunk(
+                    self.CHUNKS, i),
+                "controller_rotation_distance_iqr_" + str(i): controller_rotation_distance.interquartile_range_chunk(
+                    self.CHUNKS, i)
             }
 
     def to_dict(self):
