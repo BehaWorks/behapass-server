@@ -14,7 +14,7 @@ def create_db(param=None):
     return instance
 
 
-class Mongo():
+class Mongo:
 
     def __init__(self) -> None:
         super().__init__()

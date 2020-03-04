@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from server import config
 from server.config.config import MAXIMAL_DISTANCE
 from server.db.test_mongo import TestMongo
@@ -23,7 +22,6 @@ for i in db.get_all_metrix_test():
     df = pd.DataFrame(i, index=["user_id"])
     df = df.drop("_id", axis="columns")
     df = df.drop("user_id", axis="columns")
-    #df = df.drop("session_id", axis="columns")
     result = model.search(df.to_numpy("float32"), config["NEIGHBOURS"])
     if len(result) > 0:
         if i["user_id"] in user_ids_from_train:
@@ -37,13 +35,13 @@ for i in db.get_all_metrix_test():
             y_pred.append("newUser")
 
 
-a_kuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
-efjedna_mikro = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
-efjedna_makro = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
+accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
+f1_mikro = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
+f1_makro = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
 matica = confusion_matrix(y_true=y_true, y_pred=y_pred)
 
-print("a_kuracy: %s" % a_kuracy)
-print("efjedna_mikro: %s" % efjedna_mikro)
-print("efjedna_makro: %s" % efjedna_makro)
+print("accuracy: %s" % accuracy)
+print("f1_mikro: %s" % f1_mikro)
+print("f1_makro: %s" % f1_makro)
 print("metrix: \n%s" % matica)
 
