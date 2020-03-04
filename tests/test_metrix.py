@@ -1,11 +1,12 @@
 from unittest import TestCase
 
-from server.models.movement import Movement, HEADSET, CONTROLLER_1
 from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
+from server.metrix.controller_rotation_distance import ControllerRotationDistance
+from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
 from server.metrix.velocity import Velocity
-from server.metrix.device_distance import DeviceDistance
+from server.models.movement import Movement, HEADSET, CONTROLLER_1
 
 movements = [Movement.from_dict({"session_id": "test",
                                  "user_id": "test",
@@ -14,9 +15,9 @@ movements = [Movement.from_dict({"session_id": "test",
                                  "x": 2 ** i,
                                  "y": 2 ** i,
                                  "z": 2 ** i,
-                                 "yaw": "test",
-                                 "pitch": "test",
-                                 "roll": "test",
+                                 "yaw": 2 ** i,
+                                 "pitch": 2 ** i,
+                                 "roll": 2 ** i,
                                  "r_x": "test",
                                  "r_y": "test",
                                  "r_z": "test",
@@ -36,6 +37,9 @@ class TestMetrix(TestCase):
          "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
                     221.7025034, 443.4050067, 886.8100135]},
         {"instance": Velocity(), "input": movements,
+         "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
+                    221.7025034, 443.4050067, 886.8100135]},
+        {"instance": ControllerRotationDistance(), "input": movements,
          "output": [1.732050808, 3.464101615, 6.92820323, 13.85640646, 27.71281292, 55.42562584, 110.8512517,
                     221.7025034, 443.4050067, 886.8100135]}
     ]
