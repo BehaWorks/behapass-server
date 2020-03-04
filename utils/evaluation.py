@@ -8,11 +8,8 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 
 db = create_db(TestMongo())
 model = get_model()
-DISTANCE = 20
 y_true = []
 y_pred = []
-bad_distances = []
-distances = []
 
 db_train = create_db()
 
