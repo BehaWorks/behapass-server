@@ -23,6 +23,8 @@ class Mongo():
         self.movement_collection = self.db["movement"]
         self.button_collection = self.db["button"]
         self.metrix_collection = self.db["metrix"]
+        self.train_collection = self.db["train"]
+        self.test_collection = self.db["test"]
 
     def get_all_movements(self):
         return self.movement_collection.find().sort("timestamp", pymongo.ASCENDING)
@@ -44,6 +46,9 @@ class Mongo():
 
     def get_user_ids(self):
         return self.movement_collection.distinct("user_id")
+
+    def get_user_ids_from_train(self):
+        return self.train_collection.distinct("user_id")
 
     def get_session_ids(self, user_id=None):
         if user_id is not None:
