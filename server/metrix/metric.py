@@ -30,12 +30,12 @@ class Metric:
 
     @staticmethod
     def to_quaternion(angle):  # yaw (Z), pitch (Y), roll (X)
-        cy = np.cos(angle.yaw * 0.5)
-        sy = np.sin(angle.yaw * 0.5)
-        cp = np.cos(angle.pitch * 0.5)
-        sp = np.sin(angle.pitch * 0.5)
-        cr = np.cos(angle.roll * 0.5)
-        sr = np.sin(angle.roll * 0.5)
+        cy = np.cos(angle[0] * 0.5)
+        sy = np.sin(angle[0] * 0.5)
+        cp = np.cos(angle[1] * 0.5)
+        sp = np.sin(angle[1] * 0.5)
+        cr = np.cos(angle[2] * 0.5)
+        sr = np.sin(angle[2] * 0.5)
 
         this_quaternion = Quaternion(w=cy * cp * cr + sy * sp * sr,
                                      x=cy * cp * sr - sy * sp * cr,
