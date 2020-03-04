@@ -24,6 +24,11 @@ class Metric:
         return points, timestamps
 
     @staticmethod
+    def extract_timestamps(movements):
+        timestamps = [np.array(movement.timestamp) for movement in movements]
+        return timestamps
+
+    @staticmethod
     def extract_euler_angles(movements):
         angles = [np.array([movement.yaw, movement.pitch, movement.roll]) * np.pi / 180. for movement in movements]
         return angles

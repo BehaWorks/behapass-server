@@ -7,7 +7,8 @@ class MetrixVector:
     VECTOR_LENGTH = 29 * CHUNKS + 2
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                 device_distance: Result, controller_rotation_distance: Result, session_id, user_id) -> None:
+                 device_distance: Result, controller_rotation_distance: Result, time_length: Result, session_id,
+                 user_id) -> None:
         self.data = {
             "user_id": user_id,
             "session_id": session_id,
@@ -46,13 +47,19 @@ class MetrixVector:
             "controller_rotation_distance_minimum": controller_rotation_distance.minimum,
             "controller_rotation_distance_maximum": controller_rotation_distance.maximum,
             "controller_rotation_distance_std_dev": controller_rotation_distance.std_dev,
-            "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range
+            "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range,
+            "time_length_average": time_length.average,
+            "time_length_median": time_length.median,
+            "time_length_minimum": time_length.minimum,
+            "time_length_maximum": time_length.maximum,
+            "time_length_std_dev": time_length.std_dev,
+            "time_length_iqr": time_length.interquartile_range
         }
         self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance)
+                                controller_rotation_distance, time_length)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                           device_distance: Result, controller_rotation_distance: Result):
+                           device_distance: Result, controller_rotation_distance: Result, time_length: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
@@ -97,7 +104,13 @@ class MetrixVector:
                 "controller_rotation_distance_std_dev_" + str(i): controller_rotation_distance.std_dev_chunk(
                     self.CHUNKS, i),
                 "controller_rotation_distance_iqr_" + str(i): controller_rotation_distance.interquartile_range_chunk(
-                    self.CHUNKS, i)
+                    self.CHUNKS, i),
+                "time_length_average_" + str(i): time_length.average_chunk(self.CHUNKS, i),
+                "time_length_median_" + str(i): time_length.median_chunk(self.CHUNKS, i),
+                "time_length_minimum_" + str(i): time_length.minimum_chunk(self.CHUNKS, i),
+                "time_length_maximum_" + str(i): time_length.maximum_chunk(self.CHUNKS, i),
+                "time_length_std_dev_" + str(i): time_length.std_dev_chunk(self.CHUNKS, i),
+                "time_length_iqr_" + str(i): time_length.interquartile_range_chunk(self.CHUNKS, i),
             }
 
     def to_dict(self):
