@@ -5,6 +5,7 @@ from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.controller_rotation_distance import ControllerRotationDistance
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
+from server.metrix.time_length import TimeLength
 from server.metrix.velocity import Velocity
 from server.models.movement import Movement, HEADSET, CONTROLLER_1
 
@@ -41,7 +42,9 @@ class TestMetrix(TestCase):
                     221.7025034, 443.4050067, 886.8100135]},
         {"instance": ControllerRotationDistance(), "input": movements,
          "output": [0.0, 0.0, 0.0, 0.0, 0.47725676001698336, 1.1102230246251565e-16, 1.1102230246251565e-16,
-                    1.1102230246251565e-16, 1.1102230246251565e-16, 1.1102230246251565e-16]}
+                    1.1102230246251565e-16, 1.1102230246251565e-16, 1.1102230246251565e-16]},
+        {"instance": TimeLength(), "input": movements,
+         "output": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
     ]
 
     def test_calculate(self):

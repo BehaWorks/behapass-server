@@ -7,7 +7,8 @@ class MetrixVector:
     VECTOR_LENGTH = 29 * CHUNKS + 2
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                 device_distance: Result, controller_rotation_distance: Result, session_id, user_id) -> None:
+                 device_distance: Result, controller_rotation_distance: Result, time_length: Result, session_id,
+                 user_id) -> None:
         self.data = {
             "user_id": user_id,
             "session_id": session_id,
@@ -46,13 +47,14 @@ class MetrixVector:
             "controller_rotation_distance_minimum": controller_rotation_distance.minimum,
             "controller_rotation_distance_maximum": controller_rotation_distance.maximum,
             "controller_rotation_distance_std_dev": controller_rotation_distance.std_dev,
-            "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range
+            "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range,
+            "time_length_minimum": time_length.minimum,
         }
         self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance)
+                                controller_rotation_distance, time_length)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                           device_distance: Result, controller_rotation_distance: Result):
+                           device_distance: Result, controller_rotation_distance: Result, time_length: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
