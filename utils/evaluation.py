@@ -11,9 +11,7 @@ model = get_model()
 y_true = []
 y_pred = []
 
-db_train = create_db()
-
-user_ids_from_train = db_train.get_user_ids_from_train()
+user_ids_from_train = db.metrix_collection.distinct("user_id")
 print(user_ids_from_train)
 for i in db.get_all_metrix_test():
     df = pd.DataFrame(i, index=["user_id"])
