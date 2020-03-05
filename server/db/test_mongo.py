@@ -10,3 +10,6 @@ class TestMongo(Mongo):
 
     def get_all_metrix_test(self):
         return self.test_metrix_collection.find()
+
+    def get_user_ids(self):
+        return self.metrix_collection.distinct("user_id")
