@@ -9,7 +9,7 @@ config = {
     "DB_NAME": "behaworks_logger_v8",
     "DB_NAME_OTHER": "behaworks_logger_v8",
     "RATIO_OF_EXISTING_USERS": 70,
-    "NORMAL_SPLIT": "y"
+    "NORMAL_SPLIT": True
 }
 
 mongo = pymongo.MongoClient(config["DB_HOST"])
@@ -21,7 +21,7 @@ df = pd.DataFrame(list(metrix_collection.find()))
 df = df.drop("session_id", axis="columns")
 user_ids = df["user_id"].unique()
 
-if config["NORMAL_SPLIT"] == 'y':
+if config["NORMAL_SPLIT"]:
     shuffle(user_ids)
     df_first_part_by_user_id = df.loc[df['user_id'].isin(user_ids[:int(len(user_ids) / 100 * (config["RATIO_OF_EXISTING_USERS"]))])]
     df_second_part_by_user_id = df.loc[df['user_id'].isin(user_ids[int(len(user_ids) / 100 * (config["RATIO_OF_EXISTING_USERS"])):])]
