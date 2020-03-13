@@ -13,13 +13,13 @@ class FaissIndexFlatL2:
         super().__init__()
         self.db = create_db()
         df = pd.DataFrame(list(self.db.get_all_metrix()))
-        self.user_ids = df["user_id"]
+        self.user_ids = list(df["user_id"])
         self.index = faiss.IndexFlatL2(len(df.columns))
         self.scaler = StandardScaler()
         self.fit(df)
 
     def fit(self, df):
-        self.user_ids = df["user_id"]
+        self.user_ids = list(df["user_id"])
         df = df.drop("user_id", axis="columns")
         try:
             df = df.drop("_id", axis="columns")
@@ -44,12 +44,13 @@ class FaissIndexFlatL2:
         return results
 
     def known_users(self):
-        return self.user_ids.unique()
+        return self.user_ids
 
     def evaluate(self, data):
         y_true = []
         y_pred = []
         for _, i in data.iterrows():
+
             df = pd.DataFrame(i.to_dict(), index=["user_id"])
             try:
                 df = df.drop("_id", axis="columns")
