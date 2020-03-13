@@ -1,6 +1,6 @@
 import pandas as pd
 from plotly.graph_objs._figure import Figure
-from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.feature_selection import SelectKBest, f_classif
 
 from server import create_db
 from server.db.test_mongo import TestMongo
@@ -31,31 +31,33 @@ df = df.dropna()
 user_ids = df.pop("user_id")
 test_user_ids = test_df.pop("user_id")
 k = len(df.columns)
-model_metrics = ["accuracy", "f1-micro", "f1-macro"]
-score_df = pd.DataFrame(columns=["nr. of features", "features"] + model_metrics)
-feature_dict = dict()
+score_df = None
+model_metrics = []
 while k > 0:
-    selector = SelectKBest(chi2, k=k)
+    selector = SelectKBest(f_classif, k=k)
     selector.fit(df, y=user_ids)
     selected_features = selector.get_support(indices=True)
     df_filtered = df.iloc[:, selected_features]
     test_df_filtered = test_df.iloc[:, selected_features]
 
     model.fit(df_filtered.join(user_ids))
-    scores = model.evaluate(test_df_filtered.join(test_user_ids))
-    score_df.loc[len(score_df)] = [k] + [list(df_filtered.columns)] + list(scores[:-1])
-    print("Number of features: %d" % k)
-    print("Accuracy: %f\nF1-micro: %f\nF1-macro: %f\nConfusion matrix: \n%s\n============================" % scores)
+    eval_result, conf_matrix = model.evaluate(test_df_filtered.join(test_user_ids), print_info=True)
+    if score_df is None:
+        score_df = pd.DataFrame(columns=["k", "features"] + list(eval_result))
+        model_metrics = list(eval_result)
+    eval_result["k"] = k
+    eval_result["features"] = list(df_filtered.columns)
+    score_df = score_df.append(eval_result, ignore_index=True)
     k = k - 1
 
 fig = Figure()
 for col in score_df.columns[2:]:
-    fig.add_scatter(x=score_df["nr. of features"], y=score_df[col], name=col)
+    fig.add_scatter(x=score_df["k"], y=score_df[col], name=col)
 
 fig.show(renderer="browser")
 
 score_df.sort_values(by=model_metrics, ascending=False, inplace=True)
-print("Number of features: %d\nFeatures list: %s" % (
-score_df['nr. of features'].values[0], score_df['features'].values[0]))
+for col in score_df.columns:
+    print(f"{col}: {score_df[col].values[0]}")
 
 pass

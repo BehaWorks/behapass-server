@@ -46,7 +46,7 @@ class FaissIndexFlatL2:
     def known_users(self):
         return self.user_ids
 
-    def evaluate(self, data):
+    def evaluate(self, data, print_info=False):
         y_true = []
         y_pred = []
         for _, i in data.iterrows():
@@ -72,12 +72,42 @@ class FaissIndexFlatL2:
                 else:
                     y_pred.append("newUser")
 
-        accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
-        f1_micro = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
-        f1_macro = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
-        conf_matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
+        model_metrics = {
+            "accuracy": accuracy_score(y_true=y_true, y_pred=y_pred),
+            "f1_micro": f1_score(y_true=y_true, y_pred=y_pred, average="micro"),
+            "f1_macro": f1_score(y_true=y_true, y_pred=y_pred, average="macro"),
+        }
+        matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
 
-        return accuracy, f1_micro, f1_macro, conf_matrix
+        for (i, true) in enumerate(y_true):
+            if true != "newUser":
+                y_true[i] = "existingUser"
+            if y_pred[i] != "newUser":
+                y_pred[i] = "existingUser"
+
+        binary_matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
+        TP = binary_matrix[0][0]
+        FN = binary_matrix[0][1]
+        FP = binary_matrix[1][0]
+        TN = binary_matrix[1][1]
+
+        model_metrics["TPR"] = TP / (TP + FN)
+        model_metrics["FPR"] = FP / (FP + TN)
+        model_metrics["TNR"] = TN / (FP + TN)
+        model_metrics["FNR"] = 1 - model_metrics["TPR"]
+
+        if print_info:
+            print("Accuracy: %s" % model_metrics["accuracy"])
+            print("F1_micro: %s" % model_metrics["f1_micro"])
+            print("F1_macro: %s" % model_metrics["f1_macro"])
+            print("True positive rate: %s" % model_metrics["TPR"])
+            print("True negative rate: %s" % model_metrics["TNR"])
+            print("False positive rate: %s" % model_metrics["FPR"])
+            print("False negative rate: %s" % model_metrics["FNR"])
+            print("Confusion matrix: \n%s" % matrix)
+            print("Binary matrix: \n%s\n======================" % binary_matrix)
+
+        return model_metrics, matrix
 
     def process_results(self, results):
         counts = {}
