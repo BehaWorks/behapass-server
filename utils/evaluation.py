@@ -13,6 +13,7 @@ y_pred = []
 
 user_ids_from_train = db.metrix_collection.distinct("user_id")
 print(user_ids_from_train)
+
 for i in db.get_all_metrix_test():
     df = pd.DataFrame(i, index=["user_id"])
     df = df.drop("_id", axis="columns")
@@ -33,10 +34,31 @@ for i in db.get_all_metrix_test():
 accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
 f1_mikro = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
 f1_makro = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
-matica = confusion_matrix(y_true=y_true, y_pred=y_pred)
+matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
+
+for (i, true) in enumerate(y_true):
+    if true != "newUser":
+        y_true[i] = "existingUser"
+    if y_pred[i] != "newUser":
+        y_pred[i] = "existingUser"
+
+binary_matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
+TP = binary_matrix[0][0]
+FN = binary_matrix[0][1]
+FP = binary_matrix[1][0]
+TN = binary_matrix[1][1]
+
+TPR = TP/(TP+FN)
+FPR = FP/(FP+TN)
+TNR = TN/(FP+TN)
+FNR = 1 - TPR
 
 print("accuracy: %s" % accuracy)
 print("f1_mikro: %s" % f1_mikro)
 print("f1_makro: %s" % f1_makro)
-print("metrix: \n%s" % matica)
-
+print("True positive rate: %s" % TPR)
+print("True negative rate: %s" % TNR)
+print("False positive rate: %s" % FPR)
+print("False negative rate: %s" % FNR)
+print("matrix: \n%s" % matrix)
+print("binary matrix: \n%s" % binary_matrix)
