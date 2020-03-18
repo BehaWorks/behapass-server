@@ -14,7 +14,7 @@ class FaissIndexFlatL2:
         self.db = create_db()
         df = pd.DataFrame(list(self.db.get_all_metrix()))
         self.user_ids = list(df["user_id"])
-        self.index = faiss.IndexFlatL2(len(df.columns))
+        self.index = None
         self.scaler = StandardScaler()
         self.fit(df)
 
@@ -43,9 +43,6 @@ class FaissIndexFlatL2:
                 results.append({"user_id": self.user_ids[i], "distance": float(d)})
         return results
 
-    def known_users(self):
-        return self.user_ids
-
     def evaluate(self, data, print_info=False):
         y_true = []
         y_pred = []
@@ -62,7 +59,7 @@ class FaissIndexFlatL2:
                 pass
             result = self.search(df.to_numpy("float32"), config["NEIGHBOURS"])
             if len(result) > 0:
-                if i["user_id"] in self.known_users():
+                if i["user_id"] in self.user_ids:
                     y_true.append(i["user_id"])
                 else:
                     y_true.append("newUser")

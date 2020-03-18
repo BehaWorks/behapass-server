@@ -1,5 +1,7 @@
+import webbrowser
+
 import pandas as pd
-from plotly.graph_objs._figure import Figure
+import plotly.graph_objects as go
 from sklearn.feature_selection import SelectKBest, f_classif
 
 from server import create_db
@@ -50,11 +52,14 @@ while k > 0:
     score_df = score_df.append(eval_result, ignore_index=True)
     k = k - 1
 
-fig = Figure()
+fig = go.Figure()
 for col in score_df.columns[2:]:
     fig.add_scatter(x=score_df["k"], y=score_df[col], name=col)
 
-fig.show(renderer="browser")
+try:
+    fig.show(renderer="browser")
+except webbrowser.Error:
+    print("No runnable browser. Not showing visualisation.")
 
 score_df.sort_values(by=model_metrics, ascending=False, inplace=True)
 for col in score_df.columns:
