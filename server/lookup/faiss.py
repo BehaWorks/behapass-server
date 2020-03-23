@@ -94,6 +94,7 @@ class FaissIndexFlatL2:
         model_metrics["FNR"] = 1 - model_metrics["TPR"]
 
         if print_info:
+            print("Nr. of features: %s" % len(df.columns))
             print("Accuracy: %s" % model_metrics["accuracy"])
             print("F1_micro: %s" % model_metrics["f1_micro"])
             print("F1_macro: %s" % model_metrics["f1_macro"])
