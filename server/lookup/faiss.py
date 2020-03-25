@@ -94,6 +94,7 @@ class FaissIndexFlatL2:
         model_metrics["FNR"] = 1 - model_metrics["TPR"]
 
         if print_info:
+            print("Nr. of features: %s" % len(df.columns))
             print("Accuracy: %s" % model_metrics["accuracy"])
             print("F1_micro: %s" % model_metrics["f1_micro"])
             print("F1_macro: %s" % model_metrics["f1_macro"])
@@ -130,3 +131,12 @@ class FaissIndexFlatL2:
         distances = list(finalists.items())
         distances.sort(key=lambda tup: tup[1])
         return distances[0][0]
+
+
+class TestModel(FaissIndexFlatL2):
+
+    def __init__(self) -> None:
+        self.db = None
+        self.user_ids = []
+        self.index = None
+        self.scaler = StandardScaler()
