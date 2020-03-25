@@ -131,3 +131,12 @@ class FaissIndexFlatL2:
         distances = list(finalists.items())
         distances.sort(key=lambda tup: tup[1])
         return distances[0][0]
+
+
+class TestModel(FaissIndexFlatL2):
+
+    def __init__(self) -> None:
+        self.db = None
+        self.user_ids = []
+        self.index = None
+        self.scaler = StandardScaler()
