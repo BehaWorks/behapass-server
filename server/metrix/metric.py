@@ -81,7 +81,7 @@ class Metric:
         return derivatives
 
     @staticmethod
-    def calculate_distance(function, values):
+    def calculate_length(function, values):
         distances = []
         try:
             actual_values = values.pop(0)
