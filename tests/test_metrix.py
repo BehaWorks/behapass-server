@@ -47,7 +47,8 @@ class TestMetrix(TestCase):
         {"instance": TimeLength(), "input": movements,
          "output": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]},
         {"instance": StrokeLength(), "input": movements,
-         "output": [1774, 1774, 1774, 1774, 1774, 1774, 1774, 1774, 1774, 1774]}
+         "output": [1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614,
+                    1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614]}
     ]
 
     def test_calculate(self):

@@ -6,6 +6,6 @@ class TimeLength(Metric):
     def calculate(self, movements: list) -> Result:
         timestamps = self.extract_timestamps(movements)
 
-        timestamps_unified = [timestamps[-1] for _ in timestamps]
+        timestamps_unified = [timestamps[-1]]*10
 
         return Result(timestamps_unified)

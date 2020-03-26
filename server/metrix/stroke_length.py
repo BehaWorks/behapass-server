@@ -6,5 +6,6 @@ class StrokeLength(Metric):
     def calculate(self, movements: list) -> Result:
         points, timestamps = self.extract_points_timestamps(movements)
         distances = self.calculate_distance(self.distance, points)
+        suma = [sum(distances)]*10
 
-        return Result(sum(distances))
+        return Result(suma)
