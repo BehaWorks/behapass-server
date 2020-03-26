@@ -20,7 +20,7 @@ def create_metrix_vector(controller_data, headset_data) -> MetrixVector:
     device_distance_result = DeviceDistance().calculate(controller_data + headset_data)
     controller_rotation_distance_result = ControllerRotationDistance().calculate(controller_data)
     time_length_result = TimeLength().calculate(controller_data)
-    stroke_distance_result = StrokeLength().calculate(controller_data)
+    stroke_length_result = StrokeLength().calculate(controller_data)
     return MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
                         device_distance_result, controller_rotation_distance_result, time_length_result,
-                        stroke_distance_result, controller_data[0].session_id, controller_data[0].user_id)
+                        stroke_length_result, controller_data[0].session_id, controller_data[0].user_id)
