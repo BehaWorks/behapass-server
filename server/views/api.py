@@ -160,7 +160,7 @@ class Lookup(Resource):
     @namespace.response(code=404, model=not_found, description='Not Found')
     def post(self):
         vector = create_metrix_vector(*split_movements(request.json["movements"]))
-        df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
+        df = pd.DataFrame(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
         result = get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
