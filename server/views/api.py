@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from flask import Blueprint, request
-from flask_restplus import Resource, Api, fields
+from flask_restplus import Resource, Api, fields, marshal
 
 from server import app
 from server.lookup.faiss import *
@@ -61,6 +61,7 @@ user_record = logger.model('User record', {"data": fields.String()})
 
 lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
                                                "distance": fields.Float(required=True)})
+not_found = logger.model('Not found response', {"message": fields.String(required=True)})
 
 model = None
 
@@ -155,13 +156,17 @@ class ButtonRecord(Resource):
 class Lookup(Resource):
 
     @logger.expect(logger_record)
-    @logger.marshal_with(lookup_result)
+    @namespace.response(code=200, model=lookup_result, description='Success')
+    @namespace.response(code=404, model=not_found, description='Not Found')
     def post(self):
         vector = create_metrix_vector(*split_movements(request.json["movements"]))
-        df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
+        df = pd.DataFrame(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
-        return get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
+        result = get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
+        if not result:
+            return {"message": "No users were found."}, 404
+        return marshal(result, lookup_result)
 
 
 def split_movements(collection):
