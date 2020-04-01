@@ -31,6 +31,24 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(1, len(s) + 1))
 
 
+def alles_zusammen(data: pd.DataFrame):
+    col_indices = dict()
+    for index, column in enumerate(data.columns):
+        col_label = str(column).rstrip("_0123456789")
+        if col_label in col_indices:
+            col_indices[col_label].append(index)
+        else:
+            col_indices[col_label] = [index]
+
+    yield from create_index_combinations(col_indices)
+
+
+def create_index_combinations(col_indices):
+    for combination in powerset(col_indices):
+        indices = [col_indices[metric] for metric in combination]
+        yield chain(*indices)
+
+
 def groups_by_stats(data: pd.DataFrame):
     stats_indices = dict()
     for stat in STATISTICS:
@@ -42,9 +60,7 @@ def groups_by_stats(data: pd.DataFrame):
             if col_label.endswith(stat):
                 stats_indices[stat].append(index)
 
-    for combination in powerset(stats_indices):
-        indices = [stats_indices[stat] for stat in combination]
-        yield chain(*indices)
+    yield from create_index_combinations(stats_indices)
 
 
 def groups_by_metrix(data: pd.DataFrame):
@@ -56,9 +72,7 @@ def groups_by_metrix(data: pd.DataFrame):
         else:
             metrix[metric_name] = [index]
 
-    for combination in powerset(metrix):
-        indices = [metrix[metric] for metric in combination]
-        yield chain(*indices)
+    yield from create_index_combinations(metrix)
 
 
 def analyze(feature_indices):
@@ -82,7 +96,8 @@ def append_score(s_df, score):
 
 
 parser = argparse.ArgumentParser(description="Run feature selection and store model evaluation in a .csv file.")
-parser.add_argument('method', type=str, choices=['k_best', 'brute_force', 'groups_stats', 'groups_metrix'],
+parser.add_argument('method', type=str,
+                    choices=['k_best', 'brute_force', 'groups_stats', 'groups_metrix', 'alles_zusammen'],
                     metavar='METHOD',
                     help='''feature selection method, choices: {%(choices)s}''')
 parser.add_argument('-p', '--processes', type=int, help='Number of processes (default: %(default)s)', default=1)
@@ -137,15 +152,14 @@ if args.method == 'k_best':
 elif args.method == 'brute_force':
     for score_entry in pool.imap_unordered(analyze, powerset(range(len(df.columns)))):
         score_df = append_score(score_df, score_entry)
-
 elif args.method == 'groups_metrix':
     for score_entry in pool.imap_unordered(analyze, groups_by_metrix(df)):
         score_df = append_score(score_df, score_entry)
-
 elif args.method == 'groups_stats':
     for score_entry in pool.imap_unordered(analyze, groups_by_stats(df)):
         score_df = append_score(score_df, score_entry)
+elif args.method == 'alles_zusammen':
+    for score_entry in pool.imap_unordered(analyze, alles_zusammen(df)):
+        score_df = append_score(score_df, score_entry)
 
 score_df.to_csv(rf'feature_selection_{args.method}_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)
-
-pass
