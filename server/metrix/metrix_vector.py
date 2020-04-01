@@ -8,7 +8,7 @@ class MetrixVector:
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
                  device_distance: Result, controller_rotation_distance: Result, time_length: Result,
-                 stroke_length: Result, session_id, user_id) -> None:
+                 stroke_length: Result, straightness: Result, session_id, user_id) -> None:
         self.data = {
             "user_id": user_id,
             "session_id": session_id,
@@ -50,12 +50,14 @@ class MetrixVector:
             "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range,
             "time_length_minimum": time_length.minimum,
             "stroke_length": stroke_length.minimum,
+            "straightness": straightness.minimum,
         }
         self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance, time_length)
+                                controller_rotation_distance, stroke_length, straightness)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                           device_distance: Result, controller_rotation_distance: Result, time_length: Result):
+                           device_distance: Result, controller_rotation_distance: Result, stroke_length: Result,
+                           straightness: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
@@ -100,7 +102,9 @@ class MetrixVector:
                 "controller_rotation_distance_std_dev_" + str(i): controller_rotation_distance.std_dev_chunk(
                     self.CHUNKS, i),
                 "controller_rotation_distance_iqr_" + str(i): controller_rotation_distance.interquartile_range_chunk(
-                    self.CHUNKS, i)
+                    self.CHUNKS, i),
+                "stroke_length" + str(i): stroke_length.minimum_chunk(self.CHUNKS, i),
+                "straightness" + str(i): straightness.minimum_chunk(self.CHUNKS, i),
             }
 
     def to_dict(self):
