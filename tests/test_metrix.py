@@ -6,6 +6,7 @@ from server.metrix.controller_rotation_distance import ControllerRotationDistanc
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
 from server.metrix.time_length import TimeLength
+from server.metrix.stroke_length import StrokeLength
 from server.metrix.velocity import Velocity
 from server.models.movement import Movement, HEADSET, CONTROLLER_1
 
@@ -44,7 +45,10 @@ class TestMetrix(TestCase):
          "output": [0.0, 0.0, 0.0, 0.0, 0.47725676001698336, 1.1102230246251565e-16, 1.1102230246251565e-16,
                     1.1102230246251565e-16, 1.1102230246251565e-16, 1.1102230246251565e-16]},
         {"instance": TimeLength(), "input": movements,
-         "output": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]}
+         "output": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]},
+        {"instance": StrokeLength(), "input": movements,
+         "output": [1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614,
+                    1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614]}
     ]
 
     def test_calculate(self):
