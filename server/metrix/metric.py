@@ -80,18 +80,6 @@ class Metric:
             actual_values = next_values
         return derivatives
 
-    @staticmethod
-    def calculate_length(function, values):
-        distances = []
-        try:
-            actual_values = values.pop(0)
-        except IndexError:
-            return []
-        for next_values in values:
-            distances.append(function(next_values, actual_values))
-            actual_values = next_values
-        return distances
-
     @classmethod
     def extract_device_points(cls, movements, device_id):
         device_movements = [movement for movement in movements if movement.controller_id == device_id]
