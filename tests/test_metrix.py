@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+from server.metrix.straightness import Straightness
 from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.controller_rotation_distance import ControllerRotationDistance
@@ -48,7 +49,9 @@ class TestMetrix(TestCase):
          "output": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]},
         {"instance": StrokeLength(), "input": movements,
          "output": [1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614,
-                    1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614]}
+                    1771.88797614, 1771.88797614, 1771.88797614, 1771.88797614]},
+        {"instance": Straightness(), "input": movements,
+         "output": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
     ]
 
     def test_calculate(self):
