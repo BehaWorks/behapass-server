@@ -29,6 +29,11 @@ class Metric:
         return timestamps
 
     @staticmethod
+    def extract_trigger_pressures(buttons):
+        pressures = [np.array(button.trigger) for button in buttons]
+        return pressures
+
+    @staticmethod
     def extract_euler_angles(movements):
         angles = [np.array([movement.yaw, movement.pitch, movement.roll]) * np.pi / 180. for movement in movements]
         return angles
@@ -88,6 +93,16 @@ class Metric:
     @classmethod
     def distances_between_points(cls, points1, points2):
         return [cls.distance(point1, point2) for point1, point2 in zip(points1, points2)]
+
+    @staticmethod
+    def differences_between_pressures(controller_trigger_pressures):
+        actual_pressure = controller_trigger_pressures.pop(0)
+
+        pressure_diffs = []
+        for next_pressure in controller_trigger_pressures:
+            pressure_diffs.append(next_pressure - actual_pressure)
+            actual_pressure = next_pressure
+        return pressure_diffs
 
     @staticmethod
     def distance(a, b):

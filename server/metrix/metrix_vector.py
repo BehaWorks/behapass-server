@@ -7,7 +7,8 @@ class MetrixVector:
     VECTOR_LENGTH = 29 * CHUNKS + 2
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                 device_distance: Result, controller_rotation_distance: Result, time_length: Result, session_id,
+                 device_distance: Result, controller_rotation_distance: Result, time_length: Result,
+                 trigger_pressure_change: Result, session_id,
                  user_id) -> None:
         self.data = {
             "user_id": user_id,
@@ -49,12 +50,19 @@ class MetrixVector:
             "controller_rotation_distance_std_dev": controller_rotation_distance.std_dev,
             "controller_rotation_distance_iqr": controller_rotation_distance.interquartile_range,
             "time_length_minimum": time_length.minimum,
+            "trigger_pressure_change_average": trigger_pressure_change.average,
+            "trigger_pressure_change_median": trigger_pressure_change.median,
+            "trigger_pressure_change_minimum": trigger_pressure_change.minimum,
+            "trigger_pressure_change_maximum": trigger_pressure_change.maximum,
+            "trigger_pressure_change_std_dev": trigger_pressure_change.std_dev,
+            "trigger_pressure_change_iqr": trigger_pressure_change.interquartile_range,
         }
         self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance, time_length)
+                                controller_rotation_distance, time_length, trigger_pressure_change)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
-                           device_distance: Result, controller_rotation_distance: Result, time_length: Result):
+                           device_distance: Result, controller_rotation_distance: Result,
+                           trigger_pressure_change: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
@@ -99,7 +107,14 @@ class MetrixVector:
                 "controller_rotation_distance_std_dev_" + str(i): controller_rotation_distance.std_dev_chunk(
                     self.CHUNKS, i),
                 "controller_rotation_distance_iqr_" + str(i): controller_rotation_distance.interquartile_range_chunk(
-                    self.CHUNKS, i)
+                    self.CHUNKS, i),
+                "trigger_pressure_change_average_" + str(i): trigger_pressure_change.average_chunk(self.CHUNKS, i),
+                "trigger_pressure_change_median_" + str(i): trigger_pressure_change.median_chunk(self.CHUNKS, i),
+                "trigger_pressure_change_minimum_" + str(i): trigger_pressure_change.minimum_chunk(self.CHUNKS, i),
+                "trigger_pressure_change_maximum_" + str(i): trigger_pressure_change.maximum_chunk(self.CHUNKS, i),
+                "trigger_pressure_change_std_dev_" + str(i): trigger_pressure_change.std_dev_chunk(self.CHUNKS, i),
+                "trigger_pressure_change_iqr_" + str(i): trigger_pressure_change.interquartile_range_chunk(self.CHUNKS,
+                                                                                                           i)
             }
 
     def to_dict(self):

@@ -87,7 +87,7 @@ class LoggerRecord(Resource):
     def post(self):
         db.insert_movements(request.json["movements"])
         db.insert_buttons(request.json["buttons"])
-        db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"])))
+        db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"]))
         return {
             "status": "OK"
         }
@@ -124,7 +124,8 @@ class RegisterUser(Resource):
             return {"message": "Send more movements for succesfull registration",
                     "remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, 202
 
-        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)), queued_movements[user_id])
+        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements), request.json["buttons"]),
+                     queued_movements[user_id])
         df = remove_outliers(metrix)
         if len(df) < MINIMUM_RECORDS:
             return {"message": "Send more movements for succesfull registration",
@@ -157,7 +158,7 @@ class Lookup(Resource):
     @logger.expect(logger_record)
     @logger.marshal_with(lookup_result)
     def post(self):
-        vector = create_metrix_vector(*split_movements(request.json["movements"]))
+        vector = create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"])
         df = pd.DataFrame.from_records(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
