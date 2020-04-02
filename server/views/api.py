@@ -131,6 +131,7 @@ class RegisterUser(Resource):
                         model=partial_registration)
     @namespace.response(code=200, description='Registration successful.')
     def post(self, user_id):
+        """Stores user data permanently once registered."""
         try:
             queued_movements[user_id].append(request.json)
         except KeyError:
@@ -155,6 +156,7 @@ class MovementRecord(Resource):
 
     @logger.marshal_with(movement_record)
     def get(self):
+        """Returns all recorded movements."""
         return list(db.get_all_movements())
 
 
@@ -163,6 +165,7 @@ class ButtonRecord(Resource):
 
     @logger.marshal_with(button_record)
     def get(self):
+        """Returns all existing button records."""
         return list(db.get_all_buttons())
 
 
@@ -173,6 +176,7 @@ class Lookup(Resource):
     @namespace.response(code=200, model=lookup_result, description='Success')
     @namespace.response(code=404, model=not_found, description='Not Found')
     def post(self):
+        """Identifies the user."""
         vector = create_metrix_vector(*split_movements(request.json["movements"]))
         df = pd.DataFrame(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
