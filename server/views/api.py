@@ -23,7 +23,7 @@ logger = Api(app=blueprint, title="BehaPass", description="BehaPass API descript
 
 namespace = logger.namespace('logger', description='BehaPass APIs')
 
-movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
+movement_record = logger.model('Movement record', {'session_id': fields.String(required=True),
                                                    'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
                                                    'controller_id': fields.String(required=True,
@@ -40,7 +40,7 @@ movement_record = logger.model('Movement Record', {'session_id': fields.String(r
                                                    'r_y': fields.Float(required=True),
                                                    'r_z': fields.Float(required=True),
                                                    })
-button_record = logger.model('Button Record', {'session_id': fields.String(required=True),
+button_record = logger.model('Button record', {'session_id': fields.String(required=True),
                                                'user_id': fields.String(),
                                                'timestamp': fields.Float(required=True),
                                                'controller_id': fields.String(required=True),
@@ -58,7 +58,8 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
 
-user_record = logger.model('User record', {"data": fields.String()})
+user_record = logger.model('User record', {"id": fields.String(required=True), "data": fields.String()})
+user_data = logger.model('User data', {"data": fields.String()})
 
 lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
                                                "distance": fields.Float(required=True)})
@@ -71,6 +72,7 @@ model = None
 
 queued_movements = {}
 
+
 def get_model():
     global model
     if model is None:
@@ -80,16 +82,20 @@ def get_model():
 
 db = create_db()
 
+
 @namespace.route("/")
 class LoggerRecord(Resource):
 
     @logger.marshal_with(logger_record)
+    @namespace.doc("")
     def get(self):
+        """Returns all existing records."""
         return {"movements": list(db.get_all_movements()),
                 "buttons": list(db.get_all_buttons())}
 
     @logger.expect(logger_record)
     def post(self):
+        """Stores received records."""
         db.insert_movements(request.json["movements"])
         db.insert_buttons(request.json["buttons"])
         db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"])))
@@ -101,8 +107,10 @@ class LoggerRecord(Resource):
 @namespace.route("/user")
 class UserRecord(Resource):
 
-    @logger.expect(user_record)
+    @logger.expect(user_data)
+    @namespace.response(code=200, description='User created.', model=user_record)
     def post(self):
+        """Creates a new user ID."""
         user = request.json
         user["registration_started"] = datetime.utcnow().timestamp()
         user["registration_finished"] = None
@@ -112,7 +120,7 @@ class UserRecord(Resource):
             del (data["_id"])
         id = str(db.insert_user(data))
         queued_movements[id] = []
-        return {"id": id}
+        return marshal({"id": id, "data": user.data}, user_record), 200
 
 
 @namespace.route('/user/<user_id>/movements', methods=['POST'])
