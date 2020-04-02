@@ -4,12 +4,15 @@ from server.metrix.controller_rotation_distance import ControllerRotationDistanc
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
 from server.metrix.metrix_vector import MetrixVector
+from server.metrix.stroke_length import StrokeLength
 from server.metrix.time_length import TimeLength
 from server.metrix.trigger_pressure_change import TriggerPressureChange
 from server.metrix.velocity import Velocity
+from server.metrix.straightness import Straightness
 
 __all__ = ["acceleration", "angular_velocity", "device_distance", "jerk", "velocity", "controller_rotation_distance",
-           "time_length", "create_metrix_vector", "trigger_pressure_change"]
+           "time_length", "create_metrix_vector", "trigger_pressure_change",
+           "stroke_length", "straightness"]
 
 
 def create_metrix_vector(controller_movements, headset_movements, controller_buttons) -> MetrixVector:
@@ -21,7 +24,9 @@ def create_metrix_vector(controller_movements, headset_movements, controller_but
     controller_rotation_distance_result = ControllerRotationDistance().calculate(controller_movements)
     time_length_result = TimeLength().calculate(controller_movements)
     trigger_pressure_change_result = TriggerPressureChange().calculate(controller_buttons)
+    stroke_length_result = StrokeLength().calculate(controller_movements)
+    straightness_result = Straightness().calculate(controller_movements)
     return MetrixVector(velocity_result, acceleration_result, jerk_result, angular_velocity_result,
                         device_distance_result, controller_rotation_distance_result, time_length_result,
-                        trigger_pressure_change_result,
+                        trigger_pressure_change_result, stroke_length_result, straightness_result,
                         controller_movements[0].session_id, controller_movements[0].user_id)

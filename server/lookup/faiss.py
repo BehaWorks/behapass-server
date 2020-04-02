@@ -39,13 +39,14 @@ class FaissIndexFlatL2:
         distances, indices = self.index.search(np.ascontiguousarray(self.scaler.transform(data)), k)
         results = []
         for i, d in zip(indices[0], distances[0]):
-            if i > -1:
+            if i > -1 and d <= config["MAXIMAL_DISTANCE"]:
                 results.append({"user_id": self.user_ids[i], "distance": float(d)})
         return results
 
     def evaluate(self, data, print_info=False):
         y_true = []
         y_pred = []
+        df = pd.DataFrame()
         for _, i in data.iterrows():
 
             df = pd.DataFrame(i.to_dict(), index=["user_id"])
@@ -58,16 +59,14 @@ class FaissIndexFlatL2:
             except KeyError:
                 pass
             result = self.search(df.to_numpy("float32"), config["NEIGHBOURS"])
-            if len(result) > 0:
-                if i["user_id"] in self.user_ids:
-                    y_true.append(i["user_id"])
-                else:
-                    y_true.append("newUser")
-
-                if result[0]["distance"] <= config["MAXIMAL_DISTANCE"]:
-                    y_pred.append(result[0]["user_id"])
-                else:
-                    y_pred.append("newUser")
+            if i["user_id"] in self.user_ids:
+                y_true.append(i["user_id"])
+            else:
+                y_true.append("newUser")
+            if result:
+                y_pred.append(result[0]["user_id"])
+            else:
+                y_pred.append("newUser")
 
         model_metrics = {
             "accuracy": accuracy_score(y_true=y_true, y_pred=y_pred),
@@ -135,6 +134,7 @@ class FaissIndexFlatL2:
 
 class TestModel(FaissIndexFlatL2):
 
+    # noinspection PyMissingConstructor
     def __init__(self) -> None:
         self.db = None
         self.user_ids = []

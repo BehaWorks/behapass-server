@@ -8,7 +8,7 @@ class MetrixVector:
 
     def __init__(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
                  device_distance: Result, controller_rotation_distance: Result, time_length: Result,
-                 trigger_pressure_change: Result, session_id,
+                 trigger_pressure_change: Result, session_id, stroke_length: Result, straightness: Result,
                  user_id) -> None:
         self.data = {
             "user_id": user_id,
@@ -56,13 +56,16 @@ class MetrixVector:
             "trigger_pressure_change_maximum": trigger_pressure_change.maximum,
             "trigger_pressure_change_std_dev": trigger_pressure_change.std_dev,
             "trigger_pressure_change_iqr": trigger_pressure_change.interquartile_range,
+            "stroke_length": stroke_length.minimum,
+            "straightness": straightness.minimum,
         }
         self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance, time_length, trigger_pressure_change)
+                                controller_rotation_distance, time_length, trigger_pressure_change, stroke_length, straightness)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
                            device_distance: Result, controller_rotation_distance: Result,
-                           trigger_pressure_change: Result):
+                           trigger_pressure_change: Result, stroke_length: Result,
+                           straightness: Result):
         for i in range(self.CHUNKS):
             self.data = {
                 **self.data,
@@ -114,7 +117,9 @@ class MetrixVector:
                 "trigger_pressure_change_maximum_" + str(i): trigger_pressure_change.maximum_chunk(self.CHUNKS, i),
                 "trigger_pressure_change_std_dev_" + str(i): trigger_pressure_change.std_dev_chunk(self.CHUNKS, i),
                 "trigger_pressure_change_iqr_" + str(i): trigger_pressure_change.interquartile_range_chunk(self.CHUNKS,
-                                                                                                           i)
+                                                                                                           i),
+                "stroke_length" + str(i): stroke_length.minimum_chunk(self.CHUNKS, i),
+                "straightness" + str(i): straightness.minimum_chunk(self.CHUNKS, i),
             }
 
     def to_dict(self):
