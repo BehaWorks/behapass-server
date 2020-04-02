@@ -39,7 +39,7 @@ def alles_zusammen(data: pd.DataFrame):
             col_indices[col_label].append(index)
         else:
             col_indices[col_label] = [index]
-    print(col_indices)
+
     yield from create_index_combinations(col_indices)
 
 
