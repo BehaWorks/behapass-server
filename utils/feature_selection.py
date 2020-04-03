@@ -6,6 +6,7 @@ from multiprocessing.pool import Pool
 import pandas as pd
 import plotly.graph_objects as go
 import time
+import tqdm
 from itertools import chain, combinations
 from sklearn.feature_selection import SelectKBest, f_classif
 
@@ -35,12 +36,15 @@ def alles_zusammen(data: pd.DataFrame):
     col_indices = dict()
     for index, column in enumerate(data.columns):
         col_label = str(column).rstrip("_0123456789")
+        col_label = col_label.replace('median', 'average').replace('std_dev', 'maximum').replace('acceleration',
+                                                                                                 'velocity').replace(
+            'minimum', 'maximum')
         if col_label in col_indices:
             col_indices[col_label].append(index)
         else:
             col_indices[col_label] = [index]
 
-    yield from create_index_combinations(col_indices)
+    return col_indices
 
 
 def create_index_combinations(col_indices):
@@ -60,7 +64,7 @@ def groups_by_stats(data: pd.DataFrame):
             if col_label.endswith(stat):
                 stats_indices[stat].append(index)
 
-    yield from create_index_combinations(stats_indices)
+    return stats_indices
 
 
 def groups_by_metrix(data: pd.DataFrame):
@@ -72,17 +76,18 @@ def groups_by_metrix(data: pd.DataFrame):
         else:
             metrix[metric_name] = [index]
 
-    yield from create_index_combinations(metrix)
+    return metrix
 
 
 def analyze(feature_indices):
-    print(f"Process ID: {os.getpid()}\nF: {feature_indices}")
+    if args.verbose:
+        print(f"Process ID: {os.getpid()}\nF: {feature_indices}")
     feature_indices = list(feature_indices)
     df_filtered = df.iloc[:, feature_indices]
     test_df_filtered = test_df.iloc[:, feature_indices]
     model = TestModel()
     model.fit(df_filtered.join(user_ids))
-    eval_result, conf_matrix = model.evaluate(test_df_filtered.join(test_user_ids), print_info=True)
+    eval_result, conf_matrix = model.evaluate(test_df_filtered.join(test_user_ids), print_info=args.verbose)
     eval_result["k"] = len(feature_indices)
     eval_result["features"] = list(df_filtered.columns)
 
@@ -101,6 +106,7 @@ parser.add_argument('method', type=str,
                     metavar='METHOD',
                     help='''feature selection method, choices: {%(choices)s}''')
 parser.add_argument('-p', '--processes', type=int, help='Number of processes (default: %(default)s)', default=1)
+parser.add_argument('-v', '--verbose', action='store_true')
 args = parser.parse_args()
 
 db = create_db(TestMongo())
@@ -131,6 +137,14 @@ score_df = None
 selector = None
 
 pool = Pool(processes=args.processes if args.processes > 0 else 1)
+
+
+def work(scores, groups):
+    for score in tqdm.tqdm(pool.imap_unordered(analyze, create_index_combinations(groups)), total=2 ** len(groups)):
+        scores = append_score(scores, score)
+    return scores
+
+
 if args.method == 'k_best':
     while k > 0:
         selector = SelectKBest(f_classif, k=k)
@@ -150,16 +164,12 @@ if args.method == 'k_best':
         print("No runnable browser. Not showing visualisation.")
 
 elif args.method == 'brute_force':
-    for score_entry in pool.imap_unordered(analyze, powerset(range(len(df.columns)))):
-        score_df = append_score(score_df, score_entry)
+    score_df = work(score_df, range(len(df.columns)))
 elif args.method == 'groups_metrix':
-    for score_entry in pool.imap_unordered(analyze, groups_by_metrix(df)):
-        score_df = append_score(score_df, score_entry)
+    score_df = work(score_df, groups_by_metrix(df))
 elif args.method == 'groups_stats':
-    for score_entry in pool.imap_unordered(analyze, groups_by_stats(df)):
-        score_df = append_score(score_df, score_entry)
+    score_df = work(score_df, groups_by_stats(df))
 elif args.method == 'alles_zusammen':
-    for score_entry in pool.imap_unordered(analyze, alles_zusammen(df)):
-        score_df = append_score(score_df, score_entry)
+    score_df = work(score_df, alles_zusammen(data=df))
 
 score_df.to_csv(rf'feature_selection_{args.method}_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)
