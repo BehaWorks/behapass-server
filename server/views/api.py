@@ -13,16 +13,17 @@ from server.models.user import User
 from utils.json_encoder import JSONEncoder
 
 config = app.config
+config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
 blueprint = Blueprint('api', __name__)
 blueprint.json_encoder = JSONEncoder
-logger = Api(app=blueprint, title="Logger", description="Logger API description", version="1.1",
+logger = Api(app=blueprint, title="BehaPass", description="BehaPass API description", version="1.1",
              contact_url="https://team12-19.studenti.fiit.stuba.sk",
              doc="/documentation")
 
-namespace = logger.namespace('logger', description='Logger APIs')
+namespace = logger.namespace('logger', description='BehaPass APIs')
 
-movement_record = logger.model('Movement Record', {'session_id': fields.String(required=True),
+movement_record = logger.model('Movement record', {'session_id': fields.String(required=True),
                                                    'user_id': fields.String(),
                                                    'timestamp': fields.Float(required=True),
                                                    'controller_id': fields.String(required=True,
@@ -39,7 +40,7 @@ movement_record = logger.model('Movement Record', {'session_id': fields.String(r
                                                    'r_y': fields.Float(required=True),
                                                    'r_z': fields.Float(required=True),
                                                    })
-button_record = logger.model('Button Record', {'session_id': fields.String(required=True),
+button_record = logger.model('Button record', {'session_id': fields.String(required=True),
                                                'user_id': fields.String(),
                                                'timestamp': fields.Float(required=True),
                                                'controller_id': fields.String(required=True),
@@ -57,15 +58,20 @@ button_record = logger.model('Button Record', {'session_id': fields.String(requi
 logger_record = logger.model('Logger record', {"movements": fields.List(fields.Nested(movement_record)),
                                                "buttons": fields.List(fields.Nested(button_record))})
 
-user_record = logger.model('User record', {"data": fields.String()})
+user_record = logger.model('User record', {"id": fields.String(required=True), "data": fields.String()})
+user_data = logger.model('User data', {"data": fields.String()})
 
 lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
                                                "distance": fields.Float(required=True)})
 not_found = logger.model('Not found response', {"message": fields.String(required=True)})
 
+partial_registration = logger.model('Partial registration response', {
+    "remaining": fields.Integer(required=True, description='Number of movements needed to finish registration.')})
+
 model = None
 
 queued_movements = {}
+
 
 def get_model():
     global model
@@ -76,16 +82,20 @@ def get_model():
 
 db = create_db()
 
+
 @namespace.route("/")
 class LoggerRecord(Resource):
 
     @logger.marshal_with(logger_record)
+    @namespace.doc("")
     def get(self):
+        """Returns all existing records."""
         return {"movements": list(db.get_all_movements()),
                 "buttons": list(db.get_all_buttons())}
 
     @logger.expect(logger_record)
     def post(self):
+        """Stores received records."""
         db.insert_movements(request.json["movements"])
         db.insert_buttons(request.json["buttons"])
         db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"]))
@@ -97,8 +107,10 @@ class LoggerRecord(Resource):
 @namespace.route("/user")
 class UserRecord(Resource):
 
-    @logger.expect(user_record)
+    @logger.expect(user_data)
+    @namespace.response(code=200, description='User created.', model=user_record)
     def post(self):
+        """Creates a new user ID."""
         user = request.json
         user["registration_started"] = datetime.utcnow().timestamp()
         user["registration_finished"] = None
@@ -108,33 +120,36 @@ class UserRecord(Resource):
             del (data["_id"])
         id = str(db.insert_user(data))
         queued_movements[id] = []
-        return {"id": id}
+        return marshal({"id": id, "data": user.data}, user_record), 200
 
 
 @namespace.route('/user/<user_id>/movements', methods=['POST'])
 class RegisterUser(Resource):
     @logger.expect(movement_record)
+    @namespace.response(code=404, description='Unknown user id.', model=not_found)
+    @namespace.response(code=202, description='Successful partial registration, more movements required.',
+                        model=partial_registration)
+    @namespace.response(code=200, description='Registration successful.')
     def post(self, user_id):
+        """Stores user data permanently once registered."""
         try:
             queued_movements[user_id].append(request.json)
         except KeyError:
-            return namespace.abort(404, 'Unknown user. First create user using /user to get user_id')
+            return marshal({'message': 'Unknown user. First create user using /user to get user_id'}, not_found), 404
 
         from server.config.config import MINIMUM_RECORDS
         if len(queued_movements[user_id]) < MINIMUM_RECORDS:
-            return {"message": "Send more movements for succesfull registration",
-                    "remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, 202
+            return marshal({"remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, partial_registration), 202
 
         metrix = map(lambda movements: create_metrix_vector(*split_movements(movements), request.json["buttons"]),
                      queued_movements[user_id])
         df = remove_outliers(metrix)
         if len(df) < MINIMUM_RECORDS:
-            return {"message": "Send more movements for succesfull registration",
-                    "remaining": MINIMUM_RECORDS - len(df)}, 202
+            return marshal({"remaining": MINIMUM_RECORDS - len(df)}, partial_registration), 202
 
         db.insert_metrix(df)
         del (queued_movements[user_id])
-        return {"message": "OK"}
+        return {"message": "OK"}, 200
 
 
 @namespace.route("/movements")
@@ -142,6 +157,7 @@ class MovementRecord(Resource):
 
     @logger.marshal_with(movement_record)
     def get(self):
+        """Returns all recorded movements."""
         return list(db.get_all_movements())
 
 
@@ -150,6 +166,7 @@ class ButtonRecord(Resource):
 
     @logger.marshal_with(button_record)
     def get(self):
+        """Returns all existing button records."""
         return list(db.get_all_buttons())
 
 
@@ -160,13 +177,14 @@ class Lookup(Resource):
     @namespace.response(code=200, model=lookup_result, description='Success')
     @namespace.response(code=404, model=not_found, description='Not Found')
     def post(self):
+        """Identifies the user."""
         vector = create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"])
         df = pd.DataFrame(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
         result = get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
         if not result:
-            return {"message": "No users were found."}, 404
+            return marshal({"message": "No users were found."}, not_found), 404
         return marshal(result, lookup_result)
 
 
