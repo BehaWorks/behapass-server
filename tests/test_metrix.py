@@ -1,14 +1,14 @@
 from unittest import TestCase
 
-from server.metrix.straightness import Straightness
 from server.metrix.acceleration import Acceleration
 from server.metrix.angular_velocity import AngularVelocity
 from server.metrix.controller_rotation_distance import ControllerRotationDistance
 from server.metrix.device_distance import DeviceDistance
 from server.metrix.jerk import Jerk
+from server.metrix.straightness import Straightness
+from server.metrix.stroke_length import StrokeLength
 from server.metrix.time_length import TimeLength
 from server.metrix.trigger_pressure_change import TriggerPressureChange
-from server.metrix.stroke_length import StrokeLength
 from server.metrix.velocity import Velocity
 from server.models.button import Button
 from server.models.movement import Movement, HEADSET, CONTROLLER_1
@@ -30,7 +30,7 @@ movements = [Movement.from_dict({"session_id": "test",
 
 buttons = [Button.from_dict({"session_id": "string",
                              "user_id": "string",
-                             "timestamp": 0,
+                             "timestamp": i,
                              "controller_id": "string",
                              "trigger": 0 if i < 5 else 0.5,
                              "trackpad_x": 0,

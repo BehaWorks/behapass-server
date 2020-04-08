@@ -116,6 +116,10 @@ class Metric:
             return np.sqrt(squared)
 
     @staticmethod
+    def difference(a, b):
+        return a - b
+
+    @staticmethod
     def angle(a, b):
         a = np.array(a)
         b = np.array(b)
