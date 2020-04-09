@@ -95,16 +95,6 @@ class Metric:
         return [cls.distance(point1, point2) for point1, point2 in zip(points1, points2)]
 
     @staticmethod
-    def differences_between_pressures(controller_trigger_pressures):
-        actual_pressure = controller_trigger_pressures.pop(0)
-
-        pressure_diffs = []
-        for next_pressure in controller_trigger_pressures:
-            pressure_diffs.append(next_pressure - actual_pressure)
-            actual_pressure = next_pressure
-        return pressure_diffs
-
-    @staticmethod
     def distance(a, b):
         a = np.array(a)
         b = np.array(b)
@@ -114,10 +104,6 @@ class Metric:
             return np.sqrt(sum(squared))
         except TypeError:
             return np.sqrt(squared)
-
-    @staticmethod
-    def difference(a, b):
-        return a - b
 
     @staticmethod
     def angle(a, b):
