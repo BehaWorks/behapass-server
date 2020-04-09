@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+import bson
 from flask import Blueprint, request
 from flask_restplus import Resource, Api, fields, marshal
 
@@ -123,6 +124,25 @@ class UserRecord(Resource):
         return marshal({"id": id, "data": user.data}, user_record), 200
 
 
+# noinspection PyUnresolvedReferences
+@namespace.route('/user/<user_id>')
+class UserData(Resource):
+
+    @namespace.response(code=200, description="Success", model=user_record)
+    @namespace.response(404, "User not found", not_found)
+    @namespace.response(400, "Provided user_id is not a valid ObjectID", not_found)
+    def get(self, user_id):
+        """Returns selected user's data"""
+        try:
+            user = User.from_dict(db.get_user(user_id))
+            return marshal({"id": user.get_id(), "data": user.data}, user_record), 200
+        except KeyError:
+            return marshal({'message': f"User '{user_id}' not found."}, not_found), 404
+        except bson.errors.InvalidId as e:
+            return marshal({'message': e}, not_found), 400
+
+
+# noinspection PyUnresolvedReferences
 @namespace.route('/user/<user_id>/movements', methods=['POST'])
 class RegisterUser(Resource):
     @logger.expect(movement_record)
