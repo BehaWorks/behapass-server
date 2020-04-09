@@ -29,6 +29,11 @@ class Metric:
         return timestamps
 
     @staticmethod
+    def extract_trigger_pressures(buttons):
+        pressures = [np.array(button.trigger) for button in buttons]
+        return pressures
+
+    @staticmethod
     def extract_euler_angles(movements):
         angles = [np.array([movement.yaw, movement.pitch, movement.roll]) * np.pi / 180. for movement in movements]
         return angles

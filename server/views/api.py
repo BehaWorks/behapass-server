@@ -98,7 +98,7 @@ class LoggerRecord(Resource):
         """Stores received records."""
         db.insert_movements(request.json["movements"])
         db.insert_buttons(request.json["buttons"])
-        db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"])))
+        db.insert_metrix(create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"]))
         return {
             "status": "OK"
         }
@@ -141,7 +141,8 @@ class RegisterUser(Resource):
         if len(queued_movements[user_id]) < MINIMUM_RECORDS:
             return marshal({"remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, partial_registration), 202
 
-        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)), queued_movements[user_id])
+        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements), request.json["buttons"]),
+                     queued_movements[user_id])
         df = remove_outliers(metrix)
         if len(df) < MINIMUM_RECORDS:
             return marshal({"remaining": MINIMUM_RECORDS - len(df)}, partial_registration), 202
@@ -177,7 +178,7 @@ class Lookup(Resource):
     @namespace.response(code=404, model=not_found, description='Not Found')
     def post(self):
         """Identifies the user."""
-        vector = create_metrix_vector(*split_movements(request.json["movements"]))
+        vector = create_metrix_vector(*split_movements(request.json["movements"]), request.json["buttons"])
         df = pd.DataFrame(vector.to_dict(), index=["user_id"])
         df = df.drop("user_id", axis="columns")
         df = df.drop("session_id", axis="columns")
