@@ -135,7 +135,7 @@ class UserData(Resource):
         """Returns selected user's data"""
         try:
             user = User.from_dict(db.get_user(user_id))
-            return marshal({"id": user.get_id(), "data": user.data}, user_record), 200
+            return marshal({"id": user.id, "data": user.data}, user_record), 200
         except KeyError:
             return marshal({'message': f"User '{user_id}' not found."}, not_found), 404
         except bson.errors.InvalidId as e:
