@@ -18,3 +18,7 @@ class User:
         registration_started = obj["registration_started"]
         registration_finished = obj["registration_finished"]
         return User(data, registration_started, registration_finished, _id)
+
+    @property
+    def id(self):
+        return self._id

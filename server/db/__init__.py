@@ -1,4 +1,5 @@
 import pymongo
+from bson import ObjectId
 
 from server import config
 from server.models.user import User
@@ -65,3 +66,9 @@ class Mongo:
 
     def insert_user(self, user: User):
         return self.user_collection.insert_one(user).inserted_id
+
+    def get_user(self, user_id):
+        user = self.user_collection.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise KeyError("User not found")
+        return user
