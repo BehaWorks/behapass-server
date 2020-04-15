@@ -47,6 +47,22 @@ def alles_zusammen(data: pd.DataFrame):
     return col_indices
 
 
+def added_metrix(data: pd.DataFrame):
+    new = ["time_length_minimum", "trigger_pressure_change_average", "trigger_pressure_change_median",
+           "trigger_pressure_change_minimum", "trigger_pressure_change_maximum", "trigger_pressure_change_std_dev",
+           "trigger_pressure_change_iqr", "stroke_length", "straightness"]
+    col_indices = dict()
+    for index, column in enumerate(data.columns):
+        col_label = str(column).rstrip("_0123456789")
+        if col_label in new:
+            if col_label in col_indices:
+                col_indices[col_label].append(index)
+            else:
+                col_indices[col_label] = [index]
+
+    return col_indices
+
+
 def create_index_combinations(col_indices):
     for combination in powerset(col_indices):
         indices = [col_indices[metric] for metric in combination]
@@ -80,11 +96,38 @@ def groups_by_metrix(data: pd.DataFrame):
 
 
 def analyze(feature_indices):
+    leave_in = []
+    if args.method == "added_metrix":
+        leave_in = ['velocity_minimum', 'velocity_maximum', 'velocity_std_dev', 'acceleration_minimum',
+                    'acceleration_maximum',
+                    'acceleration_std_dev', 'velocity_minimum_0', 'velocity_maximum_0', 'velocity_std_dev_0',
+                    'acceleration_minimum_0', 'acceleration_maximum_0', 'acceleration_std_dev_0', 'velocity_minimum_1',
+                    'velocity_maximum_1', 'velocity_std_dev_1', 'acceleration_minimum_1', 'acceleration_maximum_1',
+                    'acceleration_std_dev_1', 'velocity_minimum_2', 'velocity_maximum_2', 'velocity_std_dev_2',
+                    'acceleration_minimum_2', 'acceleration_maximum_2', 'acceleration_std_dev_2', 'jerk_minimum',
+                    'jerk_maximum', 'jerk_std_dev', 'jerk_minimum_0', 'jerk_maximum_0', 'jerk_std_dev_0',
+                    'jerk_minimum_1',
+                    'jerk_maximum_1', 'jerk_std_dev_1', 'jerk_minimum_2', 'jerk_maximum_2', 'jerk_std_dev_2',
+                    'angular_velocity_iqr', 'angular_velocity_iqr_0', 'angular_velocity_iqr_1',
+                    'angular_velocity_iqr_2',
+                    'device_distance_average', 'device_distance_median', 'device_distance_average_0',
+                    'device_distance_median_0', 'device_distance_average_1', 'device_distance_median_1',
+                    'device_distance_average_2', 'device_distance_median_2', 'device_distance_minimum',
+                    'device_distance_maximum', 'device_distance_std_dev', 'device_distance_minimum_0',
+                    'device_distance_maximum_0', 'device_distance_std_dev_0', 'device_distance_minimum_1',
+                    'device_distance_maximum_1', 'device_distance_std_dev_1', 'device_distance_minimum_2',
+                    'device_distance_maximum_2', 'device_distance_std_dev_2', 'device_distance_iqr',
+                    'device_distance_iqr_0',
+                    'device_distance_iqr_1', 'device_distance_iqr_2', 'controller_rotation_distance_average',
+                    'controller_rotation_distance_median', 'controller_rotation_distance_average_0',
+                    'controller_rotation_distance_median_0', 'controller_rotation_distance_average_1',
+                    'controller_rotation_distance_median_1', 'controller_rotation_distance_average_2',
+                    'controller_rotation_distance_median_2']
     if args.verbose:
         print(f"Process ID: {os.getpid()}\nF: {feature_indices}")
     feature_indices = list(feature_indices)
-    df_filtered = df.iloc[:, feature_indices]
-    test_df_filtered = test_df.iloc[:, feature_indices]
+    df_filtered = df.iloc[:, feature_indices].join(df[list(leave_in)])
+    test_df_filtered = test_df.iloc[:, feature_indices].join(test_df[list(leave_in)])
     model = TestModel()
     model.fit(df_filtered.join(user_ids))
     eval_result, conf_matrix = model.evaluate(test_df_filtered.join(test_user_ids), print_info=args.verbose)
@@ -102,7 +145,8 @@ def append_score(s_df, score):
 
 parser = argparse.ArgumentParser(description="Run feature selection and store model evaluation in a .csv file.")
 parser.add_argument('method', type=str,
-                    choices=['k_best', 'brute_force', 'groups_stats', 'groups_metrix', 'alles_zusammen'],
+                    choices=['k_best', 'brute_force', 'groups_stats', 'groups_metrix', 'alles_zusammen',
+                             'added_metrix'],
                     metavar='METHOD',
                     help='''feature selection method, choices: {%(choices)s}''')
 parser.add_argument('-p', '--processes', type=int, help='Number of processes (default: %(default)s)', default=1)
@@ -171,5 +215,7 @@ elif args.method == 'groups_stats':
     score_df = work(score_df, groups_by_stats(df))
 elif args.method == 'alles_zusammen':
     score_df = work(score_df, alles_zusammen(data=df))
+elif args.method == 'added_metrix':
+    score_df = work(score_df, added_metrix(data=df))
 
 score_df.to_csv(rf'feature_selection_{args.method}_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)

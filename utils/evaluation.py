@@ -1,64 +1,29 @@
-import pandas as pd
-from server import config
-from server.config.config import MAXIMAL_DISTANCE
+from server.db import create_db
 from server.db.test_mongo import TestMongo
 from server.views.api import get_model
-from server.db import create_db
-from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+import pandas as pd
 
 db = create_db(TestMongo())
 model = get_model()
-y_true = []
-y_pred = []
-
-user_ids_from_train = db.metrix_collection.distinct("user_id")
-print(user_ids_from_train)
-
-for i in db.get_all_metrix_test():
-    df = pd.DataFrame(i, index=["user_id"])
+df = pd.DataFrame(list(db.get_all_metrix()))
+df_test = pd.DataFrame(list(db.get_all_metrix_test()))
+try:
     df = df.drop("_id", axis="columns")
-    df = df.drop("user_id", axis="columns")
-    result = model.search(df.to_numpy("float32"), config["NEIGHBOURS"])
-    if len(result) > 0:
-        if i["user_id"] in user_ids_from_train:
-            y_true.append(i["user_id"])
-        else:
-            y_true.append("newUser")
+except KeyError:
+    pass
+try:
+    df = df.drop("session_id", axis="columns")
+except KeyError:
+    pass
+try:
+    df_test = df_test.drop("_id", axis="columns")
+except KeyError:
+    pass
+try:
+    df_test = df_test.drop("session_id", axis="columns")
+except KeyError:
+    pass
+features = ['user_id', 'velocity_average', 'velocity_median', 'velocity_minimum', 'velocity_maximum', 'velocity_std_dev', 'velocity_iqr', 'velocity_average_0', 'velocity_median_0', 'velocity_minimum_0', 'velocity_maximum_0', 'velocity_std_dev_0', 'velocity_iqr_0', 'velocity_average_1', 'velocity_median_1', 'velocity_minimum_1', 'velocity_maximum_1', 'velocity_std_dev_1', 'velocity_iqr_1', 'velocity_average_2', 'velocity_median_2', 'velocity_minimum_2', 'velocity_maximum_2', 'velocity_std_dev_2', 'velocity_iqr_2', 'angular_velocity_average', 'angular_velocity_median', 'angular_velocity_minimum', 'angular_velocity_maximum', 'angular_velocity_std_dev', 'angular_velocity_iqr', 'angular_velocity_average_0', 'angular_velocity_median_0', 'angular_velocity_minimum_0', 'angular_velocity_maximum_0', 'angular_velocity_std_dev_0', 'angular_velocity_iqr_0', 'angular_velocity_average_1', 'angular_velocity_median_1', 'angular_velocity_minimum_1', 'angular_velocity_maximum_1', 'angular_velocity_std_dev_1', 'angular_velocity_iqr_1', 'angular_velocity_average_2', 'angular_velocity_median_2', 'angular_velocity_minimum_2', 'angular_velocity_maximum_2', 'angular_velocity_std_dev_2', 'angular_velocity_iqr_2', 'device_distance_average', 'device_distance_median', 'device_distance_minimum', 'device_distance_maximum', 'device_distance_std_dev', 'device_distance_iqr', 'device_distance_average_0', 'device_distance_median_0', 'device_distance_minimum_0', 'device_distance_maximum_0', 'device_distance_std_dev_0', 'device_distance_iqr_0', 'device_distance_average_1', 'device_distance_median_1', 'device_distance_minimum_1', 'device_distance_maximum_1', 'device_distance_std_dev_1', 'device_distance_iqr_1', 'device_distance_average_2', 'device_distance_median_2', 'device_distance_minimum_2', 'device_distance_maximum_2', 'device_distance_std_dev_2', 'device_distance_iqr_2']
+model.fit(df.loc[:, features])
+model.evaluate(df_test.loc[:, features], True)
 
-        if result[0]["distance"] <= MAXIMAL_DISTANCE:
-            y_pred.append(result[0]["user_id"])
-        else:
-            y_pred.append("newUser")
-
-
-accuracy = accuracy_score(y_true=y_true, y_pred=y_pred)
-f1_mikro = f1_score(y_true=y_true, y_pred=y_pred, average="micro")
-f1_makro = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
-matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
-
-for (i, true) in enumerate(y_true):
-    if true != "newUser":
-        y_true[i] = "existingUser"
-    if y_pred[i] != "newUser":
-        y_pred[i] = "existingUser"
-
-binary_matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
-TP = binary_matrix[0][0]
-FN = binary_matrix[0][1]
-FP = binary_matrix[1][0]
-TN = binary_matrix[1][1]
-
-TPR = TP/(TP+FN)
-FPR = FP/(FP+TN)
-TNR = TN/(FP+TN)
-FNR = 1 - TPR
-
-print("accuracy: %s" % accuracy)
-print("f1_mikro: %s" % f1_mikro)
-print("f1_makro: %s" % f1_makro)
-print("True positive rate: %s" % TPR)
-print("True negative rate: %s" % TNR)
-print("False positive rate: %s" % FPR)
-print("False negative rate: %s" % FNR)
-print("matrix: \n%s" % matrix)
-print("binary matrix: \n%s" % binary_matrix)
