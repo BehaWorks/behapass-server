@@ -1,5 +1,6 @@
 from server import create_db
 from server.metrix import create_metrix_vector
+from server.models.button import Button
 from server.views.api import split_movements
 
 db = create_db()
@@ -15,6 +16,8 @@ metrix_collection = new_db["metrix"]
 for session_id in db.get_session_ids():
     try:
         metrix_collection.insert_one(
-            create_metrix_vector(*split_movements(db.get_movements_by_session_id(session_id))).to_dict())
-    except ValueError:
+            create_metrix_vector(*split_movements(db.get_movements_by_session_id(session_id)),
+                                 [Button.from_dict(button) for button in
+                                  db.get_buttons_by_session_id(session_id)]).to_dict())
+    except (ValueError, IndexError):
         print("ZLE: " + session_id)
