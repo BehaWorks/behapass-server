@@ -59,9 +59,8 @@ logger_record = logger.model('Logger record', {"movements": fields.List(fields.N
 
 user_record = logger.model('User record', {"data": fields.String()})
 
-lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True),
-                                               "distance": fields.Float(required=True)})
-not_found = logger.model('Not found response', {"message": fields.String(required=True)})
+lookup_result = logger.model('Lookup result', {"user_id": fields.String(required=True)})
+not_found = logger.model('Bad request response', {"message": fields.String(required=True)})
 
 model = None
 
