@@ -59,8 +59,12 @@ class MetrixVector:
             "stroke_length": stroke_length.minimum,
             "straightness": straightness.minimum,
         }
-        self.create_chunks_part(velocity, acceleration, jerk, angular_velocity, device_distance,
-                                controller_rotation_distance, time_length, trigger_pressure_change, stroke_length, straightness)
+        self.create_chunks_part(velocity=velocity, acceleration=acceleration, jerk=jerk,
+                                angular_velocity=angular_velocity,
+                                device_distance=device_distance,
+                                controller_rotation_distance=controller_rotation_distance,
+                                trigger_pressure_change=trigger_pressure_change,
+                                stroke_length=stroke_length, straightness=straightness)
 
     def create_chunks_part(self, velocity: Result, acceleration: Result, jerk: Result, angular_velocity: Result,
                            device_distance: Result, controller_rotation_distance: Result,

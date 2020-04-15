@@ -28,8 +28,14 @@ class Button:
         trigger = obj["trigger"]
         trackpad_x = obj["trackpad_x"]
         trackpad_y = obj["trackpad_y"]
-        button_pressed = obj["button_pressed"]
-        button_touched = obj["button_touched"]
+        try:
+            button_pressed = obj["button_pressed"]
+        except KeyError:
+            button_pressed = obj["ulButtonPressed"]
+        try:
+            button_touched = obj["button_touched"]
+        except KeyError:
+            button_touched = obj["ulButtonPressed"]
         menu_button = obj["menu_button"]
         trackpad_pressed = obj["trackpad_pressed"]
         trackpad_touched = obj["trackpad_touched"]
