@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
+from functools import reduce
 
 from server.db import create_db, config
 
@@ -37,11 +38,18 @@ class FaissIndexFlatL2:
 
     def search(self, data, k):
         distances, indices = self.index.search(np.ascontiguousarray(self.scaler.transform(data)), k)
-        results = []
+        results = pd.DataFrame(columns=["user_id", "distance"])
         for i, d in zip(indices[0], distances[0]):
             if i > -1 and d <= config["MAXIMAL_DISTANCE"]:
-                results.append({"user_id": self.user_ids[i], "distance": float(d)})
-        return results
+                results = results.append({"user_id": self.user_ids[i], "distance": float(d)}, ignore_index=True)
+        results.sort_values(by=['distance'])
+        if not len(results):
+            return None
+        if results["user_id"][0] == results["user_id"].mode()[0] or results["user_id"].nunique() == len(results):
+            return results["user_id"][0]
+        results["distance"] = results["distance"].astype(float)
+        grouped = results.groupby('user_id').agg(inverse_sum=('distance', lambda series: np.sum(1/series)))
+        return grouped.idxmax()[0]
 
     def evaluate(self, data, print_info=False):
         y_true = []
@@ -64,7 +72,7 @@ class FaissIndexFlatL2:
             else:
                 y_true.append("newUser")
             if result:
-                y_pred.append(result[0]["user_id"])
+                y_pred.append(result)
             else:
                 y_pred.append("newUser")
 
@@ -105,31 +113,6 @@ class FaissIndexFlatL2:
             print("Binary matrix: \n%s\n======================" % binary_matrix)
 
         return model_metrics, matrix
-
-    def process_results(self, results):
-        counts = {}
-        for result in results:
-            if result["user_id"] not in counts:
-                counts[result["user_id"]] = 0
-            counts[result["user_id"]] += 1
-        if len(counts) == 1:
-            return results[0]["user_id"]
-        counts = list(counts.items())
-        counts.sort(key=lambda tup: tup[1], reverse=True)
-        if counts[0][1] > counts[1][1]:
-            return counts[0][0]
-        previous = counts[0][1]
-        finalists = {}
-        for current in counts:
-            if current[1] < previous:
-                break
-            finalists[current[0]] = 0
-        for result in results:
-            if result["user_id"] in finalists:
-                finalists[result["user_id"]] += result["distance"]
-        distances = list(finalists.items())
-        distances.sort(key=lambda tup: tup[1])
-        return distances[0][0]
 
 
 class TestModel(FaissIndexFlatL2):
