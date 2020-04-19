@@ -1,18 +1,19 @@
 import argparse
 import os
+import time
 import webbrowser
+from itertools import chain, combinations
 from multiprocessing.pool import Pool
 
 import pandas as pd
 import plotly.graph_objects as go
-import time
 import tqdm
-from itertools import chain, combinations
 from sklearn.feature_selection import SelectKBest, f_classif
 
 from server import create_db
 from server.db.test_mongo import TestMongo
 from server.lookup.faiss import TestModel
+from utils.helpers import append_score
 
 STATISTICS = ['average', 'iqr', 'maximum', 'median', 'minimum', 'std_dev']
 
@@ -137,12 +138,6 @@ def analyze(feature_indices):
     return eval_result
 
 
-def append_score(s_df, score):
-    if s_df is None:
-        s_df = pd.DataFrame(columns=list(score))
-    return s_df.append(score, ignore_index=True)
-
-
 parser = argparse.ArgumentParser(description="Run feature selection and store model evaluation in a .csv file.")
 parser.add_argument('method', type=str,
                     choices=['k_best', 'brute_force', 'groups_stats', 'groups_metrix', 'alles_zusammen',
@@ -155,24 +150,8 @@ args = parser.parse_args()
 
 db = create_db(TestMongo())
 
-df = pd.DataFrame(list(db.get_all_metrix()))
-test_df = pd.DataFrame(list(db.get_all_metrix_test()))
-try:
-    df = df.drop("_id", axis="columns")
-except KeyError:
-    pass
-try:
-    df = df.drop("session_id", axis="columns")
-except KeyError:
-    pass
-try:
-    test_df = test_df.drop("_id", axis="columns")
-except KeyError:
-    pass
-try:
-    test_df = test_df.drop("session_id", axis="columns")
-except KeyError:
-    pass
+df, test_df = db.get_clean_train_test()
+
 df = df.dropna()
 user_ids = df.pop("user_id")
 test_user_ids = test_df.pop("user_id")
