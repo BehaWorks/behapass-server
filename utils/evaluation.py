@@ -52,6 +52,8 @@ parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-q', '--quick', action='store_true',
                     help="Don't run cross-validation, just evaluate the model once")
 parser.add_argument('--no_save', action='store_true', help="Don't save cross-validation results")
+parser.add_argument('-i', '--iterations', type=int, help='How many times to run the validation (default: %(default)s)',
+                    default=1)
 args = parser.parse_args()
 
 db = create_db(TestMongo())
@@ -85,7 +87,12 @@ if args.quick:
     m.fit(df[features])
     m.evaluate(df_test[features], True)
 else:
-    score_df = cross_validation(df.append(df_test), selected_features=features)
+    score_df = None
+    for i in tqdm.tqdm(range(args.iterations), ascii=True):
+        if score_df is not None:
+            score_df = score_df.append(cross_validation(df.append(df_test), selected_features=features))
+        else:
+            score_df = cross_validation(df.append(df_test), selected_features=features)
     if not args.no_save:
         score_df.to_csv(rf'cv_evaluation_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)
     print(score_df.mean().rename('Mean'))
