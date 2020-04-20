@@ -1,5 +1,5 @@
-pyquaternion
-numpy
+pyquaternion~=0.9.5
+numpy~=1.18.2
 bson>=0.5.8
 Flask>=1.1.1
 flask-restplus>=0.13.0
@@ -8,7 +8,10 @@ gunicorn>=20.0.4
 pandas>=0.25.3
 plotly>=4.4.1
 pymongo>=3.10.0
-scikit-learn
-tqdm
+scikit-learn~=0.22.2.post1
+tqdm~=4.45.0
 vg>=1.6.1
 Werkzeug==0.16.1
+scipy~=1.4.1
+attrs~=19.3.0
+setuptools~=41.2.0
