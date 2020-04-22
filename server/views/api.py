@@ -142,7 +142,7 @@ class UserData(Resource):
 
 
 # noinspection PyUnresolvedReferences
-@namespace.route('/user/<user_id>/movements', methods=['POST'])
+@namespace.route('/user/<user_id>/movements', methods=['POST', 'GET'])
 class RegisterUser(Resource):
     @logger.expect(movement_record)
     @namespace.response(code=404, description='Unknown user id.', model=not_found)
@@ -170,6 +170,11 @@ class RegisterUser(Resource):
         del (queued_movements[user_id])
         return {"message": "OK"}, 200
 
+    @logger.marshal_with(movement_record)
+    @namespace.response(code=200, description='Registration successful.', model=movement_record)
+    def get(self, user_id):
+        """Returns all recorded movements."""
+        return list(db.get_all_movements_by_user_id(user_id))
 
 @namespace.route("/movements")
 class MovementRecord(Resource):
