@@ -30,6 +30,9 @@ class Mongo:
     def get_all_movements(self):
         return self.movement_collection.find().sort("timestamp", pymongo.ASCENDING)
 
+    def get_all_movements_by_user_id(self, user_id):
+        return self.movement_collection.find({"user_id": user_id}).sort("timestamp", pymongo.ASCENDING)
+
     def get_all_metrix(self):
         return self.metrix_collection.find()
 
