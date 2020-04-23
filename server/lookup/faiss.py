@@ -1,9 +1,9 @@
+# noinspection PyUnresolvedReferences
 import faiss
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 from sklearn.preprocessing import StandardScaler
-from functools import reduce
 
 from server.db import create_db, config
 
@@ -13,6 +13,7 @@ class FaissIndexFlatL2:
     def __init__(self) -> None:
         super().__init__()
         self.db = create_db()
+        self.config = {"MAXIMAL_DISTANCE": config["MAXIMAL_DISTANCE"], "NEIGHBOURS": config["NEIGHBOURS"]}
         df = pd.DataFrame(list(self.db.get_all_metrix()))
         self.user_ids = list(df["user_id"])
         self.index = None
@@ -40,7 +41,7 @@ class FaissIndexFlatL2:
         distances, indices = self.index.search(np.ascontiguousarray(self.scaler.transform(data)), k)
         results = pd.DataFrame(columns=["user_id", "distance"])
         for i, d in zip(indices[0], distances[0]):
-            if i > -1 and d <= config["MAXIMAL_DISTANCE"]:
+            if i > -1 and d <= self.config["MAXIMAL_DISTANCE"]:
                 results = results.append({"user_id": self.user_ids[i], "distance": float(d)}, ignore_index=True)
         results.sort_values(by=['distance'])
         if not len(results):
@@ -66,7 +67,7 @@ class FaissIndexFlatL2:
                 df = df.drop("user_id", axis="columns")
             except KeyError:
                 pass
-            result = self.search(df.to_numpy("float32"), config["NEIGHBOURS"])
+            result = self.search(df.to_numpy("float32"), self.config["NEIGHBOURS"])
             if i["user_id"] in self.user_ids:
                 y_true.append(i["user_id"])
             else:
@@ -118,7 +119,9 @@ class FaissIndexFlatL2:
 class TestModel(FaissIndexFlatL2):
 
     # noinspection PyMissingConstructor
-    def __init__(self) -> None:
+    def __init__(self, maximal_distance=None, neighbours=None) -> None:
+        self.config = {"MAXIMAL_DISTANCE": maximal_distance or config["MAXIMAL_DISTANCE"],
+                       "NEIGHBOURS": neighbours or config["NEIGHBOURS"]}
         self.db = None
         self.user_ids = []
         self.index = None
