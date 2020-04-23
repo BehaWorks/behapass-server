@@ -61,8 +61,7 @@ def evaluation(features=2, quick=False, iterations=1, threshold=config.MAXIMAL_D
             run_scores = cross_validation(df.append(df_test),
                                           model=TestModel(maximal_distance=threshold, neighbours=neighbours),
                                           selected_features=features, processes=processes)
-            run_scores['threshold'] = threshold
-            run_scores['neighbours'] = neighbours
+
             if score_df is not None:
                 score_df = score_df.append(run_scores)
             else:
@@ -99,5 +98,7 @@ if __name__ == '__main__':
                       neighbours=args.neighbours, processes=args.processes)
 
     if not args.no_save:
-        s_df.to_csv(rf'cv_evaluation_{time.strftime("%Y%m%d-%H%M%S")}.csv', index=False)
+        s_df.to_csv(
+            rf'cv_evaluation_f-{args.features}_n-{args.neighbours}_t-{args.threshold}_{time.strftime("%Y%m%d-%H%M%S")}.csv',
+            index=False)
     print(s_df.mean().rename('Mean'))
