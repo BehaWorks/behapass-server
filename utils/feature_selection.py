@@ -48,9 +48,7 @@ def alles_zusammen(data: pd.DataFrame):
 
 
 def added_metrix(data: pd.DataFrame):
-    new = ["time_length_minimum", "trigger_pressure_change_average", "trigger_pressure_change_median",
-           "trigger_pressure_change_minimum", "trigger_pressure_change_maximum", "trigger_pressure_change_std_dev",
-           "trigger_pressure_change_iqr", "stroke_length", "straightness"]
+    new = ["time_length_minimum", "stroke_length", "straightness"]
     col_indices = dict()
     for index, column in enumerate(data.columns):
         col_label = str(column).rstrip("_0123456789")
