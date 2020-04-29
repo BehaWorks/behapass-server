@@ -49,7 +49,7 @@ class FaissIndexFlatL2:
         if results["user_id"][0] == results["user_id"].mode()[0] or results["user_id"].nunique() == len(results):
             return results["user_id"][0]
         results["distance"] = results["distance"].astype(float)
-        grouped = results.groupby('user_id').agg(inverse_sum=('distance', lambda series: np.sum(1/series)))
+        grouped = results.groupby('user_id').agg(inverse_sum=('distance', lambda series: np.sum(1 / series)))
         return grouped.idxmax()[0]
 
     def evaluate(self, data, print_info=False):
@@ -91,10 +91,7 @@ class FaissIndexFlatL2:
                 y_pred[i] = "existingUser"
 
         binary_matrix = confusion_matrix(y_true=y_true, y_pred=y_pred)
-        TP = binary_matrix[0][0]
-        FN = binary_matrix[0][1]
-        FP = binary_matrix[1][0]
-        TN = binary_matrix[1][1]
+        TN, FP, FN, TP = confusion_matrix(y_true=y_true, y_pred=y_pred).ravel()
 
         model_metrics["TPR"] = TP / (TP + FN)
         model_metrics["FPR"] = FP / (FP + TN)
