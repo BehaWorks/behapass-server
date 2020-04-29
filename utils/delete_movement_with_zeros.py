@@ -12,46 +12,45 @@ db_other = mongo[config["DB_NAME_OTHER"]]
 
 db = create_db()
 
-allMovements = db.get_all_movements()
+all_movements = db.get_all_movements()
 
-allMovements = list(allMovements)
-lengthOfAll = len(allMovements)
+all_movements = list(all_movements)
+length_of_all = len(all_movements)
 
 # divided of movements according to whether they are wrong
-filteredMovementWithoutZeros = list(filter(lambda x: x["x"] != 0 and x["y"] != 0 and x["z"] != 0, allMovements))
-filteredMovementWithZeros = list(filter(lambda x: x["x"] == 0 and x["y"] == 0 and x["z"] == 0, allMovements))
+filtered_movement_without_zeros = list(filter(lambda x: x["x"] != 0 and x["y"] != 0 and x["z"] != 0, all_movements))
+filtered_movement_with_zeros = list(filter(lambda x: x["x"] == 0 and x["y"] == 0 and x["z"] == 0, all_movements))
 
 # if the non-zero motion has a pair (controller - headset) in zero movements, non-zero movement is not added either
 result = []
-for nonZeroElement in filteredMovementWithoutZeros:
-    doNotContains = True
-    for zeroElement in filteredMovementWithZeros:
-        if nonZeroElement['session_id'] == zeroElement['session_id'] and nonZeroElement['timestamp'] == zeroElement['timestamp']:
-            doNotContains = False
-    if doNotContains:
-        result.append(nonZeroElement)
+for non_zero_element in filtered_movement_without_zeros:
+    do_not_contains = True
+    for zero_element in filtered_movement_with_zeros:
+        if non_zero_element['session_id'] == zero_element['session_id'] and non_zero_element['timestamp'] == zero_element['timestamp']:
+            do_not_contains = False
+    if do_not_contains:
+        result.append(non_zero_element)
 
 # If the filtered session has only one movement, it will also be deleted
-groupedMovements = (pd.DataFrame(result)
-                    .groupby(['session_id', 'controller_id']))
+grouped_movements = (pd.DataFrame(result).groupby(['session_id', 'controller_id']))
 
-toDeleteSeassionID = []
-for element in groupedMovements:
+to_delete_session_id = []
+for element in grouped_movements:
     if element[1].shape[0] == 1:
-        toDeleteSeassionID.append(element[0][0])
+        to_delete_session_id.append(element[0][0])
 
-toDeleteSeassionID = list(set(toDeleteSeassionID))
+to_delete_session_id = list(set(to_delete_session_id))
 
-finalresult = []
+final_result = []
 for movements in result:
-    doNotContains = True
-    for seasionid in toDeleteSeassionID:
-        if movements['session_id'] == seasionid:
-            doNotContains = False
+    do_not_contains = True
+    for session_id in to_delete_session_id:
+        if movements['session_id'] == session_id:
+            do_not_contains = False
 
-    if doNotContains:
-        finalresult.append(movements)
+    if do_not_contains:
+        final_result.append(movements)
 
-db_other["movements"].insert_many(pd.DataFrame(finalresult).to_dict('records'))
+db_other["movements"].insert_many(pd.DataFrame(final_result).to_dict('records'))
 
-print("deleted ", len(finalresult), " samples from", lengthOfAll)
+print("deleted ", len(final_result), " samples from", length_of_all)
