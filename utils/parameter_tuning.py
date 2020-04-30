@@ -7,7 +7,7 @@ from utils.evaluation import evaluation
 
 score_df = None
 for features_index in range(len(config.FEATURE_SELECTION)):
-    for threshold in range(12, 24):
+    for threshold in range(12, 26):
         for neighbours in range(1, 6):
             print(
                 f"Feature group: {features_index}\nThreshold: {threshold}\nK neighbours: {neighbours}\n-------------------------------------")

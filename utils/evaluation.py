@@ -50,7 +50,7 @@ def evaluation(features=2, quick=False, iterations=1, threshold=config.MAXIMAL_D
                neighbours=config.NEIGHBOURS, processes=1):
     db = create_db(TestMongo())
     df, df_test = db.get_clean_train_test()
-    features = config.FEATURE_SELECTION[features] + ['user_id']
+    features = config.FEATURE_SELECTION[features] + ['user_id'] if config.FEATURE_SELECTION[features] else df.columns
     if quick:
         m = TestModel()
         m.fit(df[features])
