@@ -1,4 +1,7 @@
+from typing import Any
+
 import pymongo
+import redis
 from bson import ObjectId
 
 from server import config
@@ -26,6 +29,7 @@ class Mongo:
         self.movement_collection = self.db["movement"]
         self.button_collection = self.db["button"]
         self.metrix_collection = self.db["metrix"]
+        self.queued_movements = RedisDict(prefix="behapass_queue_movements")
 
     def get_all_movements(self):
         return self.movement_collection.find().sort("timestamp", pymongo.ASCENDING)
@@ -78,3 +82,20 @@ class Mongo:
         if not user:
             raise KeyError("User not found")
         return user
+
+
+class RedisDict:
+    EXPIRE = 600
+
+    def __init__(self, prefix: str) -> None:
+        self.prefix = prefix
+        self.redis = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_HOST)
+
+    def __delattr__(self, name: str) -> None:
+        self.redis.delete(self.prefix + name)
+
+    def append(self, name, value):
+        self.redis.lpush(self.prefix + name, value)
+
+    def __getattribute__(self, name: str) -> Any:
+        return self.redis.get(self.prefix + name)
