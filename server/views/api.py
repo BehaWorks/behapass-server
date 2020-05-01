@@ -117,7 +117,7 @@ class UserRecord(Resource):
         if data["_id"] is None:
             del (data["_id"])
         id = str(db.insert_user(data))
-        db.queued_movements[id] = []
+        db.queued_movements.add_registering_user(id)
         return marshal({"id": id, "data": user.data}, user_record), 200
 
 
@@ -150,7 +150,7 @@ class RegisterUser(Resource):
     def post(self, user_id):
         """Stores user data permanently once registered."""
         try:
-            db.queued_movements[user_id].append(request.json)
+            db.queued_movements.append(user_id, request.json['movements'])
         except KeyError:
             return marshal({'message': 'Unknown user. First create user using /user to get user_id'}, not_found), 404
 
@@ -159,14 +159,17 @@ class RegisterUser(Resource):
             return marshal({"remaining": MINIMUM_RECORDS - len(db.queued_movements[user_id])},
                            partial_registration), 202
 
-        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)),
+        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)).to_dict(),
                      db.queued_movements[user_id])
+        metrix = pd.DataFrame(list(metrix))
+        metrix['user_id'] = user_id
         df = remove_outliers(metrix)
         if len(df) < MINIMUM_RECORDS:
             return marshal({"remaining": MINIMUM_RECORDS - len(df)}, partial_registration), 202
 
         db.insert_metrix(df)
-        del (db.queued_movements[user_id])
+        del db.queued_movements[user_id]
+        db.finish_user_registration(user_id)
         return {"message": "OK"}, 200
 
     @logger.marshal_with(movement_record)
@@ -178,17 +181,6 @@ class RegisterUser(Resource):
             return list(db.get_all_movements_by_user_id(user_id))
         except KeyError:
             return marshal({'message': 'User not found.'}, not_found), 404
-
-    @logger.marshal_with(movement_record)
-    @namespace.response(code=200, description='Success.')
-    @namespace.response(code=404, description='No pending registration for this user_id.', model=not_found)
-    def delete(self, user_id):
-        """Removes unfinished registration movements."""
-        try:
-            del db.queued_movements[user_id]
-            return {"message": "OK"}, 200
-        except KeyError:
-            return marshal({'message': 'Unknown user.'}, not_found), 404
 
     @logger.marshal_with(movement_record)
     @namespace.response(code=200, description='Success.')
