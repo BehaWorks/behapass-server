@@ -209,7 +209,7 @@ class Lookup(Resource):
         result = get_model().search(df.to_numpy("float32"), config["NEIGHBOURS"])
         if not result:
             return marshal({"message": "No users were found."}, not_found), 404
-        return marshal(result, lookup_result)
+        return marshal({"user_id": result}, lookup_result)
 
 
 def split_movements(collection):
