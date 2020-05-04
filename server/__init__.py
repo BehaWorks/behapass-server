@@ -3,6 +3,7 @@ from flask import Flask
 app = Flask(__name__)
 app.config.from_pyfile('config/config.py')
 config = app.config
+logger = app.logger
 
 from server.views import api
 from server.views import visualisations

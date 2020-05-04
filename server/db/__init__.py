@@ -6,7 +6,7 @@ import pymongo
 import redis
 from bson import ObjectId
 
-from server import config
+from server import config, logger
 from server.models.user import User
 
 instance = None
@@ -95,6 +95,11 @@ class RedisRegistrationQueueDict:
     def __init__(self, prefix: str) -> None:
         self.prefix = prefix
         self.redis = redis.Redis(host=config["REDIS_HOST"], port=config["REDIS_PORT"], decode_responses=True)
+        try:
+            self.redis.keys('')
+        except redis.exceptions.ConnectionError:
+            logger.warning(
+                f"Cannot connect to Redis on {config['REDIS_HOST']}:{config['REDIS_PORT']}. Make sure Redis is installed and running (https://hub.docker.com/_/redis/).")
 
     def __delitem__(self, key: str) -> None:
         self.redis.delete(self.prefix + key)
