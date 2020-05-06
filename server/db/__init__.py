@@ -1,7 +1,12 @@
+import json
+from datetime import datetime
+from typing import Any
+
 import pymongo
+import redis
 from bson import ObjectId
 
-from server import config
+from server import config, logger
 from server.models.user import User
 
 instance = None
@@ -26,6 +31,7 @@ class Mongo:
         self.movement_collection = self.db["movement"]
         self.button_collection = self.db["button"]
         self.metrix_collection = self.db["metrix"]
+        self.queued_movements = RedisRegistrationQueueDict(prefix="behapass_queue_movements_")
 
     def get_all_movements(self):
         return self.movement_collection.find().sort("timestamp", pymongo.ASCENDING)
@@ -78,3 +84,44 @@ class Mongo:
         if not user:
             raise KeyError("User not found")
         return user
+
+    def finish_user_registration(self, user_id):
+        self.user_collection.update_one({"_id": ObjectId(user_id)},
+                                        {"$set": {"registration_finished": datetime.utcnow().timestamp()}})
+
+
+class RedisRegistrationQueueDict:
+
+    def __init__(self, prefix: str) -> None:
+        self.prefix = prefix
+        self.redis = redis.Redis(host=config["REDIS_HOST"], port=config["REDIS_PORT"], decode_responses=True)
+        try:
+            self.redis.keys('')
+        except redis.exceptions.ConnectionError:
+            logger.warning(
+                f"Cannot connect to Redis on {config['REDIS_HOST']}:{config['REDIS_PORT']}. Make sure Redis is installed and running (https://hub.docker.com/_/redis/).")
+
+    def __delitem__(self, key: str) -> None:
+        self.redis.delete(self.prefix + key)
+        self.redis.delete(self.prefix + "registering_" + key)
+
+    def append(self, key, value):
+        if not self.redis.exists(self.prefix + "registering_" + key):
+            raise KeyError("User not found")
+        if self.redis.type(self.prefix + key) != "list":
+            self.redis.delete(self.prefix + key)
+        self.redis.lpush(self.prefix + key, json.dumps(value))
+        self.redis.expire(self.prefix + key, config["REGISTRATION_EXPIRE"])
+
+    def add_registering_user(self, user_id):
+        self.redis.set(self.prefix + "registering_" + user_id, "registration in progress")
+
+    def __getitem__(self, key: str) -> Any:
+        if self.redis.type(self.prefix + key) == "list":
+            result = [json.loads(string) for string in self.redis.lrange(self.prefix + key, 0, 200025000)]
+            return result
+
+        return self.redis.get(self.prefix + key)
+
+    def __setitem__(self, key, value):
+        self.redis.set(self.prefix + key, value)

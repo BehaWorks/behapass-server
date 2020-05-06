@@ -70,8 +70,6 @@ partial_registration = logger.model('Partial registration response', {
 
 model = None
 
-queued_movements = {}
-
 
 def get_model():
     global model
@@ -119,7 +117,7 @@ class UserRecord(Resource):
         if data["_id"] is None:
             del (data["_id"])
         id = str(db.insert_user(data))
-        queued_movements[id] = []
+        db.queued_movements.add_registering_user(id)
         return marshal({"id": id, "data": user.data}, user_record), 200
 
 
@@ -142,7 +140,7 @@ class UserData(Resource):
 
 
 # noinspection PyUnresolvedReferences
-@namespace.route('/user/<user_id>/movements', methods=['POST', 'GET'])
+@namespace.route('/user/<user_id>/movements', methods=['POST', 'GET', 'DELETE'])
 class RegisterUser(Resource):
     @logger.expect(movement_record)
     @namespace.response(code=404, description='Unknown user id.', model=not_found)
@@ -152,29 +150,48 @@ class RegisterUser(Resource):
     def post(self, user_id):
         """Stores user data permanently once registered."""
         try:
-            queued_movements[user_id].append(request.json)
+            db.queued_movements.append(user_id, request.json['movements'])
         except KeyError:
             return marshal({'message': 'Unknown user. First create user using /user to get user_id'}, not_found), 404
 
         from server.config.config import MINIMUM_RECORDS
-        if len(queued_movements[user_id]) < MINIMUM_RECORDS:
-            return marshal({"remaining": MINIMUM_RECORDS - len(queued_movements[user_id])}, partial_registration), 202
+        if len(db.queued_movements[user_id]) < MINIMUM_RECORDS:
+            return marshal({"remaining": MINIMUM_RECORDS - len(db.queued_movements[user_id])},
+                           partial_registration), 202
 
-        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)),
-                     queued_movements[user_id])
+        metrix = map(lambda movements: create_metrix_vector(*split_movements(movements)).to_dict(),
+                     db.queued_movements[user_id])
+        metrix = pd.DataFrame(list(metrix))
+        metrix['user_id'] = user_id
         df = remove_outliers(metrix)
         if len(df) < MINIMUM_RECORDS:
             return marshal({"remaining": MINIMUM_RECORDS - len(df)}, partial_registration), 202
 
         db.insert_metrix(df)
-        del (queued_movements[user_id])
+        del db.queued_movements[user_id]
+        db.finish_user_registration(user_id)
         return {"message": "OK"}, 200
 
     @logger.marshal_with(movement_record)
     @namespace.response(code=200, description='Registration successful.', model=movement_record)
+    @namespace.response(code=404, description='Unknown user id.', model=not_found)
     def get(self, user_id):
         """Returns all recorded movements."""
-        return list(db.get_all_movements_by_user_id(user_id))
+        try:
+            return list(db.get_all_movements_by_user_id(user_id))
+        except KeyError:
+            return marshal({'message': 'User not found.'}, not_found), 404
+
+    @logger.marshal_with(movement_record)
+    @namespace.response(code=200, description='Success.')
+    @namespace.response(code=404, description='No pending registration for this user_id.', model=not_found)
+    def delete(self, user_id):
+        """Removes unfinished registration movements."""
+        try:
+            del queued_movements[user_id]
+            return {"message": "OK"}, 200
+        except KeyError:
+            return marshal({'message': 'Unknown user.'}, not_found), 404
 
 @namespace.route("/movements")
 class MovementRecord(Resource):

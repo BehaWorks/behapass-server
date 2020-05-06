@@ -1,7 +1,12 @@
-# Logger
-Základný logger na logovanie pohybu vo VR spolu so stavom ovládaču napísaný vo [Flask-u](https://palletsprojects.com/p/flask/) s využitím [flask_restplus](https://flask-restplus.readthedocs.io/en/stable/).
+# BehaPass - server
+Tento repozitár obsahuje serverovú časť aplikácie BehaPass. 
+Ide o najdokonalejší spôsob prihlasovania, aký tu kedy bol a zároveň jediný, ktorý budete odteraz potrebovať.
 
-Ako úložisko slúži [MongoDb](https://www.mongodb.com/).
+_Vitajte na začiatku novej éry._
+
+Jeho základ tvorí [Flask](https://palletsprojects.com/p/flask/) aplikácia s využitím [flask_restplus](https://flask-restplus.readthedocs.io/en/stable/).
+
+Ako primárne úložisko slúži [MongoDb](https://www.mongodb.com/) a ako dočasné úložisko slúži [Redis](https://redis.io/).
 
 Vyžaduje sa Python 3 alebo novší. Na nainštalovanie všetkých závislostí z requirements.txt odporúčame použiť nástroj `pip`.
 
@@ -40,5 +45,8 @@ Pri vytváraní konfigurácie v Idei treba dať do _Bind ports_ to čo je v prep
 docker run -p 1234:1234 -v <C:/cesta/k/repozitaru>:/logger --name behapass-server --env "port"="1234" behapass-server
 ```
  - ```db_host``` a ```db_port``` - adresa a port, na ktorých počúva databáza. Default: ```172.17.0.1``` a ```27017```
+ - ```redis_host``` a ```redis_port``` - adresa a port Redis-u, do ktorého sa ukladajú pohyby počas registrácie používateľa. Default: ```172.17.0.1``` a ```6379```
+ - ```registration_expire``` - doba v sekundách, po ktorej sa odstránia pohyby z nedokončených registrácií. Automaticky sa odstránia iba pohyby, dáta používateľa ostávajú v perzistentnom úložisku. Default: ```600```
+
 
 Premenná pri builde: ```copy``` - čo všetko sa má skopírovať do imageu. Pri vývoji odporúčame použiť možnosť ```requirements.txt``` a prepojiť lokálne súbory cez ```-v```. V produkcii netreba zadávať nič a defaultne sa nakopíruje všetko. Iné hodnoty spravia chyby. 

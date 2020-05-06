@@ -29,7 +29,7 @@ def cv_run(arguments):
 
 def cross_validation(df_all, model=TestModel(), selected_features=None, processes=1):
     user_ids = df_all['user_id'].unique()
-    if not selected_features:
+    if selected_features is None or len(selected_features) == 0:
         selected_features = list(df_all.columns)
     shuffle(user_ids)
     scores = None
@@ -46,7 +46,7 @@ def cross_validation(df_all, model=TestModel(), selected_features=None, processe
     return scores
 
 
-def evaluation(features=2, quick=False, iterations=1, threshold=config.MAXIMAL_DISTANCE,
+def evaluation(features=None, quick=False, iterations=1, threshold=config.MAXIMAL_DISTANCE,
                neighbours=config.NEIGHBOURS, processes=1):
     db = create_db(TestMongo())
     df, df_test = db.get_clean_train_test()
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--threshold', type=int,
                         help='Threshold for marking user as a new user (default: %(default)s)',
                         default=config.MAXIMAL_DISTANCE)
-    parser.add_argument('-f', '--features', type=int, help='Feature set to use (default: %(default)s)', default=2,
+    parser.add_argument('-f', '--features', type=int, help='Feature set to use (default: use all features)',
                         choices=range(len(config.FEATURE_SELECTION)))
 
     args = parser.parse_args()

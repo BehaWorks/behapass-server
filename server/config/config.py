@@ -3,16 +3,25 @@ import os
 DB_HOST = "mongodb://" + os.environ["db_host"] + ":" + os.environ["db_port"] + "/"
 DB_NAME = "behaworks_logger_v10"
 DB_PORT = ""
+REDIS_HOST = os.environ["redis_host"]
+try:
+ REDIS_PORT = os.environ["redis_port"]
+except KeyError:
+ REDIS_PORT = 6379
+try:
+ REGISTRATION_EXPIRE = int(os.environ["registration_expire"])
+except (ValueError, KeyError):
+ REGISTRATION_EXPIRE = 600
 URL_PREFIX = "/api"
 MINIMUM_RECORDS = 10
 MAXIMAL_DISTANCE = 20
 try:
-    METRIX_CHUNKS = int(os.environ["metrix_chunks"])
+ METRIX_CHUNKS = int(os.environ["metrix_chunks"])
 except (ValueError, KeyError):
-    METRIX_CHUNKS = 3
+ METRIX_CHUNKS = 3
 
 try:
-    NEIGHBOURS = int(os.environ["neighbours"])
+ NEIGHBOURS = int(os.environ["neighbours"])
 except (ValueError, KeyError):
     NEIGHBOURS = 1
 
