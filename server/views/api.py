@@ -182,13 +182,12 @@ class RegisterUser(Resource):
         except KeyError:
             return marshal({'message': 'User not found.'}, not_found), 404
 
-    @logger.marshal_with(movement_record)
     @namespace.response(code=200, description='Success.')
     @namespace.response(code=404, description='No pending registration for this user_id.', model=not_found)
     def delete(self, user_id):
         """Removes unfinished registration movements."""
         try:
-            del queued_movements[user_id]
+            del db.queued_movements[user_id]
             return {"message": "OK"}, 200
         except KeyError:
             return marshal({'message': 'Unknown user.'}, not_found), 404
